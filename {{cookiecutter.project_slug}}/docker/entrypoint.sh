@@ -14,11 +14,11 @@ echo "  Workdir :`pwd`"
 
 # expect input/output/log folders to be mounted
 stat $INPUT_FOLDER &> /dev/null || \
-        (echo "ERROR: You must mount '$INPUT_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+        (echo "ERROR: You must mount '$INPUT_FOLDER' to deduce user and group ids" && exit 1)
 stat $OUTPUT_FOLDER &> /dev/null || \
-    (echo "ERROR: You must mount '$OUTPUT_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+    (echo "ERROR: You must mount '$OUTPUT_FOLDER' to deduce user and group ids" && exit 1)
 stat $LOG_FOLDER &> /dev/null || \
-    (echo "ERROR: You must mount '$LOG_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+    (echo "ERROR: You must mount '$LOG_FOLDER' to deduce user and group ids" && exit 1)
 
 stat $INPUT_FOLDER &> /dev/null
 if [[ $? -eq 0 ]]
