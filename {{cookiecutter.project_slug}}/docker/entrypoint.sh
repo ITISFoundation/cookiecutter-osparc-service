@@ -11,16 +11,21 @@ echo "  User    :`id $(whoami)`"
 echo "  Workdir :`pwd`"
 
 
-if [[ ${SC_BUILD_TARGET} == "development" ]]
+
+# expect input/output/log folders to be mounted
+stat $INPUT_FOLDER &> /dev/null || \
+        (echo "ERROR: You must mount '$INPUT_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+stat $OUTPUT_FOLDER &> /dev/null || \
+    (echo "ERROR: You must mount '$OUTPUT_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+stat $LOG_FOLDER &> /dev/null || \
+    (echo "ERROR: You must mount '$LOG_FOLDER' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
+
+stat $INPUT_FOLDER &> /dev/null
+if [[ $? -eq 0 ]]
 then
-    # NOTE: expects docker run ... -v $(pwd):/devel/services/{{ cookiecutter.project_slug }}
-    DEVEL_MOUNT=/devel/services/{{ cookiecutter.project_slug }}
-
-    stat $DEVEL_MOUNT &> /dev/null || \
-        (echo "ERROR: You must mount '$DEVEL_MOUNT' to deduce user and group ids" && exit 1) # FIXME: exit does not stop script
-
-    USERID=$(stat -c %u $DEVEL_MOUNT)
-    GROUPID=$(stat -c %g $DEVEL_MOUNT)
+    # NOTE: expects docker run ... -v /path/to/input/folder:$INPUT_FOLDER
+    USERID=$(stat -c %u $INPUT_FOLDER)
+    GROUPID=$(stat -c %g $INPUT_FOLDER)
     GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
 
     if [[ $USERID -eq 0 ]]
@@ -32,22 +37,26 @@ then
         then
             GROUPNAME=myu
             addgroup -g $GROUPID $GROUPNAME
+            # change group property of files already around
+            find / -group 8004 -exec chgrp -h $GROUPNAME {} \;
         else
             addgroup scu $GROUPNAME
         fi
 
         deluser scu &> /dev/null
         adduser -u $USERID -G $GROUPNAME -D -s /bin/sh scu
+        # change user property of files already around
+        find / -user 8004 -exec chown -h scu {} \;
     fi
 fi
+
 
 
 {# TODO: Add option to add access to docker sockets or not #}
 # Appends docker group if socket is mounted
 DOCKER_MOUNT=/var/run/docker.sock
 
-stat $DOCKER_MOUNT &> /dev/null
-if [[ $? -eq 0 ]]
+if [[ -e $DOCKER_MOUNT && stat $DOCKER_MOUNT &> /dev/null && $? -eq 0 ]]
 then
     GROUPID=$(stat -c %g $DOCKER_MOUNT)
     {# sometimes the group docker already exists for some reason, so let's create one that has less chances of existing  #}
