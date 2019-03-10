@@ -24,6 +24,23 @@ stat $INPUT_FOLDER &> /dev/null
 if [[ $? -eq 0 ]]
 then
     # NOTE: expects docker run ... -v /path/to/input/folder:$INPUT_FOLDER
+    # check input/output/log folders are owned by the same user
+    if [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $OUTPUT_FOLDER) ]]
+    then
+        (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different user id's. not allowed" && exit 1)
+    elif [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $LOG_FOLDER) ]]
+    then
+        (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different user id's. not allowed" && exit 1)
+    fi
+    # check input/output/log folders are owned by the same group
+    if [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $OUTPUT_FOLDER) ]]
+    then
+        (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different group id's. not allowed" && exit 1)
+    elif [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $LOG_FOLDER) ]]
+    then
+        (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different group id's. not allowed" && exit 1)
+    fi
+    
     USERID=$(stat -c %u $INPUT_FOLDER)
     GROUPID=$(stat -c %g $INPUT_FOLDER)
     GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
