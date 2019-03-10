@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -e
 # This entrypoint script:
 #
 # - Executes *inside* of the container upon start as --user [default root]
