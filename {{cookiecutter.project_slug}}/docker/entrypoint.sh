@@ -40,7 +40,7 @@ then
     then
         (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different group id's. not allowed" && exit 1)
     fi
-    
+
     USERID=$(stat -c %u $INPUT_FOLDER)
     GROUPID=$(stat -c %g $INPUT_FOLDER)
     GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
@@ -55,7 +55,7 @@ then
             GROUPNAME=myu
             addgroup -g $GROUPID $GROUPNAME
             # change group property of files already around
-            find / -group 8004 -exec chgrp -h $GROUPNAME {} \;
+            find / -group $SC_USER_ID -exec chgrp -h $GROUPNAME {} \;
         else
             addgroup scu $GROUPNAME
         fi
@@ -63,7 +63,7 @@ then
         deluser scu &> /dev/null
         adduser -u $USERID -G $GROUPNAME -D -s /bin/sh scu
         # change user property of files already around
-        find / -user 8004 -exec chown -h scu {} \;
+        find / -user $SC_USER_ID -exec chown -h scu {} \;
     fi
 fi
 
