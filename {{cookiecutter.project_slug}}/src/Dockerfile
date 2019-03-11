@@ -1,7 +1,7 @@
-FROM alpine as base
+FROM alpine:3.7 as base
 #
 #  USAGE:
-#     cd sercices/{{ cookiecutter.project_slug }}
+#     cd services/{{ cookiecutter.project_slug }}
 #     docker build -f Dockerfile -t {{ cookiecutter.project_slug }}:prod --target production ../../
 #     docker run {{ cookiecutter.project_slug }}:prod
 #
@@ -66,6 +66,7 @@ ENV SC_BUILD_TARGET cache
 #  + /home/scu     $HOME = WORKDIR
 #    + {{ cookiecutter.project_package_name }} [scu:scu]
 #    + docker [scu:scu]
+#    + service.cli [scu:scu]
 #
 FROM base as production
 
@@ -110,10 +111,10 @@ COPY --chown=scu:scu docker/*.sh docker/
 RUN chmod +x docker/*.sh
 
 {%- if cookiecutter.project_type == "computational" %}
-# copy simcore cli
+# copy simcore service cli
 COPY --chown=scu:scu service.cli/ service.cli/
 RUN chmod +x service.cli/*
-{# necessary to be able to call run directly with sh in front #}
+# necessary to be able to call run directly without sh in front
 ENV PATH="/home/scu/service.cli:${PATH}"
 {%- endif %}
 
