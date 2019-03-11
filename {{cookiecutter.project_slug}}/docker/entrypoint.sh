@@ -11,7 +11,6 @@ echo "  User    :`id $(whoami)`"
 echo "  Workdir :`pwd`"
 
 
-
 # expect input/output/log folders to be mounted
 stat $INPUT_FOLDER &> /dev/null || \
         (echo "ERROR: You must mount '$INPUT_FOLDER' to deduce user and group ids" && exit 1)
@@ -44,15 +43,14 @@ then
     USERID=$(stat -c %u $INPUT_FOLDER)
     GROUPID=$(stat -c %g $INPUT_FOLDER)
     GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
-
     if [[ $USERID -eq 0 ]]
     then
         addgroup scu root
     else
-        # take host's credentials in myu
+        # take host's credentials in scu
         if [[ -z "$GROUPNAME" ]]
         then
-            GROUPNAME=myu
+            GROUPNAME=scu
             addgroup -g $GROUPID $GROUPNAME
             # change group property of files already around
             find / -group $SC_USER_ID -exec chgrp -h $GROUPNAME {} \;
@@ -89,4 +87,10 @@ then
 fi
 
 echo "Starting $@ ..."
+echo "  scu rights    :`id scu`"
+echo "  local dir :`ls -al`"
+echo "  input dir :`ls -al $INPUT_FOLDER`"
+echo "  output dir :`ls -al $OUTPUT_FOLDER`"
+echo "  log dir :`ls -al $LOG_FOLDER`"
+
 su-exec scu "$@"
