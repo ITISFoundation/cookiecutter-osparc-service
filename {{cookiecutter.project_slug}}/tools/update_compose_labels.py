@@ -7,6 +7,7 @@ import argparse
 import json
 import logging
 import sys
+from enum import IntEnum
 from pathlib import Path
 from typing import Dict
 
@@ -14,6 +15,11 @@ import yaml
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+class ExitCode(IntEnum):
+    SUCCESS = 0
+    FAIL = 1
+
 
 def get_compose_file(compose_file: Path) -> Dict:
     with compose_file.open() as filep:
@@ -43,7 +49,7 @@ def update_compose_labels(compose_cfg: Dict, json_labels: Dict) -> bool:
         changed = True
     return changed
 
-def main(args = None):
+def main(args = None) -> int:
     parser = argparse.ArgumentParser(
         description="Update a docker-compose file with json files in a path")
     parser.add_argument(
@@ -64,10 +70,11 @@ def main(args = None):
                 log.info("Update completed")
         else:
             log.info("No update necessary")
+        return ExitCode.SUCCESS
     except: #pylint: disable=bare-except
         log.exception("Unexpected error:")
-        sys.exit(1)
+        return ExitCode.FAIL
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
