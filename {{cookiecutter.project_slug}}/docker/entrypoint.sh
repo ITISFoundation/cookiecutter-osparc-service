@@ -20,49 +20,46 @@ stat $LOG_FOLDER &> /dev/null || \
     (echo "ERROR: You must mount '$LOG_FOLDER' to deduce user and group ids" && exit 1)
 
 stat $INPUT_FOLDER &> /dev/null
-if [[ $? -eq 0 ]]
+# NOTE: expects docker run ... -v /path/to/input/folder:$INPUT_FOLDER
+# check input/output/log folders are owned by the same user
+if [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $OUTPUT_FOLDER) ]]
 then
-    # NOTE: expects docker run ... -v /path/to/input/folder:$INPUT_FOLDER
-    # check input/output/log folders are owned by the same user
-    if [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $OUTPUT_FOLDER) ]]
-    then
-        (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different user id's. not allowed" && exit 1)
-    elif [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $LOG_FOLDER) ]]
-    then
-        (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different user id's. not allowed" && exit 1)
-    fi
-    # check input/output/log folders are owned by the same group
-    if [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $OUTPUT_FOLDER) ]]
-    then
-        (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different group id's. not allowed" && exit 1)
-    elif [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $LOG_FOLDER) ]]
-    then
-        (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different group id's. not allowed" && exit 1)
-    fi
+    (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different user id's. not allowed" && exit 1)
+elif [[ $(stat -c %u $INPUT_FOLDER) -ne $(stat -c %u $LOG_FOLDER) ]]
+then
+    (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different user id's. not allowed" && exit 1)
+fi
+# check input/output/log folders are owned by the same group
+if [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $OUTPUT_FOLDER) ]]
+then
+    (echo "ERROR: '$INPUT_FOLDER' and '$OUTPUT_FOLDER' have different group id's. not allowed" && exit 1)
+elif [[ $(stat -c %g $INPUT_FOLDER) -ne $(stat -c %g $LOG_FOLDER) ]]
+then
+    (echo "ERROR: '$INPUT_FOLDER' and '$LOG_FOLDER' have different group id's. not allowed" && exit 1)
+fi
 
-    USERID=$(stat -c %u $INPUT_FOLDER)
-    GROUPID=$(stat -c %g $INPUT_FOLDER)
-    GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
-    if [[ $USERID -eq 0 ]]
+USERID=$(stat -c %u $INPUT_FOLDER)
+GROUPID=$(stat -c %g $INPUT_FOLDER)
+GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
+if [[ $USERID -eq 0 ]]
+then
+    addgroup scu root
+else
+    # take host's credentials in scu
+    if [[ -z "$GROUPNAME" ]]
     then
-        addgroup scu root
+        GROUPNAME=scu
+        addgroup -g $GROUPID $GROUPNAME
+        # change group property of files already around
+        find / -group $SC_USER_ID -exec chgrp -h $GROUPNAME {} \;
     else
-        # take host's credentials in scu
-        if [[ -z "$GROUPNAME" ]]
-        then
-            GROUPNAME=scu
-            addgroup -g $GROUPID $GROUPNAME
-            # change group property of files already around
-            find / -group $SC_USER_ID -exec chgrp -h $GROUPNAME {} \;
-        else
-            addgroup scu $GROUPNAME
-        fi
-
-        deluser scu &> /dev/null
-        adduser -u $USERID -G $GROUPNAME -D -s /bin/sh scu
-        # change user property of files already around
-        find / -user $SC_USER_ID -exec chown -h scu {} \;
+        addgroup scu $GROUPNAME
     fi
+
+    deluser scu &> /dev/null
+    adduser -u $USERID -G $GROUPNAME -D -s /bin/sh scu
+    # change user property of files already around
+    find / -user $SC_USER_ID -exec chown -h scu {} \;
 fi
 
 
