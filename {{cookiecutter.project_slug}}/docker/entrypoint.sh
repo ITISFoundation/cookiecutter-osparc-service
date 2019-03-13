@@ -4,7 +4,7 @@ set -e
 #
 # - Executes *inside* of the container upon start as --user [default root]
 # - Notice that the container *starts* as --user [default root] but
-#   *runs* as non-root user [scu]
+#   *runs* as non-root user [$SC_USER_NAME]
 #
 echo "Entrypoint for stage ${SC_BUILD_TARGET} ..."
 echo "  User    :`id $(whoami)`"
@@ -43,23 +43,23 @@ GROUPID=$(stat -c %g $INPUT_FOLDER)
 GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
 if [[ $USERID -eq 0 ]]
 then
-    addgroup scu root
+    addgroup $SC_USER_NAME root
 else
-    # take host's credentials in scu
+    # take host's credentials in $SC_USER_NAME
     if [[ -z "$GROUPNAME" ]]
     then
-        GROUPNAME=scu
+        GROUPNAME=$SC_USER_NAME
         addgroup -g $GROUPID $GROUPNAME
         # change group property of files already around
         find / -group $SC_USER_ID -exec chgrp -h $GROUPNAME {} \;
     else
-        addgroup scu $GROUPNAME
+        addgroup $SC_USER_NAME $GROUPNAME
     fi
 
-    deluser scu &> /dev/null
-    adduser -u $USERID -G $GROUPNAME -D -s /bin/sh scu
+    deluser $SC_USER_NAME &> /dev/null
+    adduser -u $USERID -G $GROUPNAME -D -s /bin/sh $SC_USER_NAME
     # change user property of files already around
-    find / -user $SC_USER_ID -exec chown -h scu {} \;
+    find / -user $SC_USER_ID -exec chown -h $SC_USER_NAME {} \;
 fi
 
 
@@ -80,14 +80,14 @@ then
         # if group already exists in container, then reuse name
         GROUPNAME=$(getent group ${GROUPID} | cut -d: -f1)
     fi
-    addgroup scu $GROUPNAME
+    addgroup $SC_USER_NAME $GROUPNAME
 fi
 
 echo "Starting $@ ..."
-echo "  scu rights    :`id scu`"
+echo "  $SC_USER_NAME rights    :`id $SC_USER_NAME`"
 echo "  local dir :`ls -al`"
 echo "  input dir :`ls -al $INPUT_FOLDER`"
 echo "  output dir :`ls -al $OUTPUT_FOLDER`"
 echo "  log dir :`ls -al $LOG_FOLDER`"
 
-su-exec scu "$@"
+su-exec $SC_USER_NAME "$@"
