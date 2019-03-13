@@ -24,7 +24,6 @@ class ExitCode(IntEnum):
     SUCCESS = 0
     FAIL = 1
 
-
 def get_compose_file(compose_file: Path) -> Dict:
     with compose_file.open() as filep:
         return yaml.safe_load(filep)
@@ -54,12 +53,13 @@ def update_compose_labels(compose_cfg: Dict, json_labels: Dict) -> bool:
     return changed
 
 def main(args = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--compose", help="The compose file where labels shall be updated", type=Path, required=True)
-    parser.add_argument("--input", help="The json folder to stringify", type=Path, required=True)
-    options = parser.parse_args(args)
-
     try:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("--compose", help="The compose file where labels shall be updated", type=Path, required=True)
+        parser.add_argument("--input", help="The json folder to stringify", type=Path, required=True)
+        options = parser.parse_args(args)
+
+
         log.info("Testing if %s needs updates using labels in %s", options.compose, options.input)
         # get available jsons
         compose_cfg = get_compose_file(options.compose)
