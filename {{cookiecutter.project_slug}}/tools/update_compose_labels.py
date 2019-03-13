@@ -43,13 +43,12 @@ def update_compose_labels(compose_cfg: Dict, json_labels: Dict) -> bool:
         changed = True
     return changed
 
-def main():
+def main(args = None):
     parser = argparse.ArgumentParser(
         description="Update a docker-compose file with json files in a path")
     parser.add_argument(
         "--compose", help="The compose file where labels shall be updated", type=Path, required=True)
     parser.add_argument("--input", help="The json folder to stringify", type=Path, required=True)
-    args = sys.argv[1:]
     options = parser.parse_args(args)
 
     try:
