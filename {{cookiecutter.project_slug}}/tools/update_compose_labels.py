@@ -1,7 +1,11 @@
 #!/bin/python
 
-###
-# Usage: python update_compose_labels --c docker-compose.yml -f folder/path
+""" Update a docker-compose file with json files in a path
+
+    Usage: python update_compose_labels --c docker-compose.yml -f folder/path
+
+:return: error code
+"""
 
 import argparse
 import json
@@ -50,10 +54,8 @@ def update_compose_labels(compose_cfg: Dict, json_labels: Dict) -> bool:
     return changed
 
 def main(args = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Update a docker-compose file with json files in a path")
-    parser.add_argument(
-        "--compose", help="The compose file where labels shall be updated", type=Path, required=True)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--compose", help="The compose file where labels shall be updated", type=Path, required=True)
     parser.add_argument("--input", help="The json folder to stringify", type=Path, required=True)
     options = parser.parse_args(args)
 
