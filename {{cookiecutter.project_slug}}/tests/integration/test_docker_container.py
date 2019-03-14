@@ -110,7 +110,8 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
         assert not mismatch, "wrong/incorrect files in {}".format(host_folders[folder])
         assert not errors, "missing files in {}".format(host_folders[folder])
         # test if the files that are there are matching the ones that should be
-        list_of_files = [x.name for x in host_folders[folder].iterdir()  if not ".gitkeep" in x.name]
-        match, mismatch, errors = filecmp.cmpfiles(host_folders[folder], validation_folders[folder], list_of_files, shallow=False)
-        assert not mismatch, "wrong/incorrect generated files in {}".format(host_folders[folder])
-        assert not errors, "too many files in {}".format(host_folders[folder])
+        if folder != "input":
+            list_of_files = [x.name for x in host_folders[folder].iterdir()  if not ".gitkeep" in x.name]
+            match, mismatch, errors = filecmp.cmpfiles(host_folders[folder], validation_folders[folder], list_of_files, shallow=False)
+            assert not mismatch, "wrong/incorrect generated files in {}".format(host_folders[folder])
+            assert not errors, "too many files in {}".format(host_folders[folder])
