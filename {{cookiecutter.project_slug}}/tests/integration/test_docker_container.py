@@ -33,7 +33,7 @@ def _is_gitlab_executor() -> bool:
     return "GITLAB_CI" in os.environ
 
 def _get_gitlab_volume_name() -> str:
-    return Path(os.environ["SC_CI_PYTEST_TMP_NAME"])
+    return os.environ["SC_CI_PYTEST_TMP_NAME"]
 
 def _get_gitlab_volume_path() -> Path:
     return Path(os.environ["SC_CI_PYTEST_TMP"])
