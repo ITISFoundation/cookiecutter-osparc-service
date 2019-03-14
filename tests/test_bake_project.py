@@ -3,11 +3,8 @@
 import logging
 import os
 import subprocess
-import sys
 from contextlib import contextmanager
-from pathlib import Path
 
-import pytest
 
 logger = logging.getLogger(__name__)
 
