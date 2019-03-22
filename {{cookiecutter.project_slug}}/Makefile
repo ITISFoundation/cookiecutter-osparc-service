@@ -72,11 +72,11 @@ down:
 .PHONY: unit-test integration-test
 # target: unit-test – Runs unit tests [w/ fail fast]
 unit-test:
-	"pytest" -x -v --log-level=warning tests/unit
+	"pytest" -x -v --junitxml=pytest_unittest.xml --log-level=warning tests/unit
 
 # target: integration-test – Runs integration tests [w/ fail fast] (needs built container)
 integration-test:
-	"pytest" -x -v --log-level=warning tests/integration
+	"pytest" -x -v --junitxml=pytest_integrationtest.xml--log-level=warning tests/integration
 
 .PHONY: push-release push-staging
 # target: push: – Pushes services to the registry.

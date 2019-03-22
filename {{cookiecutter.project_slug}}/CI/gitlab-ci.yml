@@ -15,6 +15,11 @@ before_script:
   script:
     - pip install -r models/{{ cookiecutter.project_slug }}/tests/requirements.txt
     - cd models/{{ cookiecutter.project_slug }}; make unit-test; make integration-test; cd;
+  artifacts:
+    reports:
+      junit:
+        - models/{{ cookiecutter.project_slug }}/pytest_unittest.xml
+        - models/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
 
 {{ cookiecutter.project_slug }}-staging:
   stage: deploy
