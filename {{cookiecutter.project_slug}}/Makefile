@@ -67,6 +67,13 @@ down:
 	${DOCKER_COMPOSE} -f docker-compose.yml down
 
 ## -------------------------------
+# Development/Debugging.
+.PHONY: up-devel
+# target: up-devel: – Starts service as root and with sources mounted in /home/scu/src for debugging.
+up-devel: .env down
+	${DOCKER_COMPOSE} -f docker-compose.yml -f docker-compose.devel.yml run {{ cookiecutter.project_slug }}
+
+## -------------------------------
 # Testing.
 
 .PHONY: unit-test integration-test
