@@ -64,7 +64,7 @@ def host_folders(temporary_path: Path) -> Dict:
 @pytest.fixture
 def container_variables() -> Dict:
     # of type INPUT_FOLDER=/home/scu/data/input
-    env = {"{}_FOLDER".format(str(folder).upper()):str(_CONTAINER_FOLDER / folder) for folder in _FOLDER_NAMES}
+    env = {"{}_FOLDER".format(str(folder).upper()):(_CONTAINER_FOLDER / folder).as_posix() for folder in _FOLDER_NAMES}
     return env
 
 @pytest.fixture
@@ -86,13 +86,13 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
             volumes = {host_folders[folder]:{"bind":container_variables["{}_FOLDER".format(str(folder).upper())]} for folder in _FOLDER_NAMES}
         container = docker_client.containers.run(docker_image_key,
             "run", detach=True, remove=False, volumes=volumes, environment=container_variables)
-        response = container.wait()        
+        response = container.wait()
         if response["StatusCode"] > 0:
             logs = container.logs(timestamps=True)
             pytest.fail("The container stopped with exit code {}\n\n\ncommand:\n {}, \n\n\nlog:\n{}".format(response["StatusCode"],
             "run", pformat(
                 (container.logs(timestamps=True).decode("UTF-8")).split("\n"), width=200
-                )))        
+                )))
     except docker.errors.ContainerError as exc:
         # the container did not run correctly
         pytest.fail("The container stopped with exit code {}\n\n\ncommand:\n {}, \n\n\nlog:\n{}".format(exc.exit_status,
