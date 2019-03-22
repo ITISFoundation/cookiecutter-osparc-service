@@ -8,7 +8,7 @@ cd $(dirname $0)
 # run -> do_run -> execute
 
 set -e
-cd $HOME/{{ cookiecutter.project_package_name }}
+cd /home/scu/{{ cookiecutter.project_package_name }}
 # put the code to execute the service here
 # and default all outputs to $LOG_FILE
 # For example: java someJavaClass >> $LOG_FILE
