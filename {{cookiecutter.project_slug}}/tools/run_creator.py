@@ -48,9 +48,9 @@ def main(args = None) -> int:
         for input_key, input_value in input_config["inputs"].items():
             if "data:" in input_value["type"]:
                 filename = input_key
-                if "fileToKeyMap" in input_value and len(input_value["fileToKeyMap"] > 0):
-                    _,filename = next(iter(input_value["fileToKeyMap"].items()))
-                input_script.append("export {}=$INPUT_FOLDER/{}".format(str(Path(input_key)).upper(), str(filename)))
+                if "fileToKeyMap" in input_value and len(input_value["fileToKeyMap"]) > 0:
+                    filename,_ = next(iter(input_value["fileToKeyMap"].items()))
+                input_script.append("export {}=$INPUT_FOLDER/{}".format(str(Path(input_key).stem).upper(), str(filename)))
             else:
                 input_script.append("export {}=$(cat $_json_input | jq '.{}')".format(str(input_key).upper(), input_key))
 
