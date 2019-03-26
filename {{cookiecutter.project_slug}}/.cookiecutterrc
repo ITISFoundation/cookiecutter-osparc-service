@@ -12,7 +12,7 @@
 #
 # Alternatively, you can run:
 #
-#    cookiecutter --overwrite-if-exists --config-file=project-path/.cookiecutterrc gh:itisfoundation/cookiecutter-simcore-pyservice
+#    cookiecutter --overwrite-if-exists --config-file=project-path/.cookiecutterrc gh:itisfoundation/cookiecutter-osparc-service
 #
 
 default_context:
