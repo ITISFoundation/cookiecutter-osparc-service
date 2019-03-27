@@ -27,19 +27,8 @@ def docker_image_key(docker_client: docker.DockerClient) -> str:
     docker_images = [image for image in docker_client.images.list() if any(image_key in tag for tag in image.tags)]
     return docker_images[0].tags[0]
 
-def _is_gitlab_executor() -> bool:
-    return "GITLAB_CI" in os.environ
-
-def _get_gitlab_volume_name() -> str:
-    return os.environ["SC_CI_PYTEST_TMP_NAME"]
-
-def _get_gitlab_volume_path() -> Path:
-    return Path(os.environ["SC_CI_PYTEST_TMP"])
-
 @pytest.fixture
 def temporary_path(tmp_path: Path) -> Path:
-    if _is_gitlab_executor():
-        return _get_gitlab_volume_path()
     return tmp_path
 
 @pytest.fixture
@@ -76,12 +65,7 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
     assert Path(host_folders["input"]).exists()
     # run the container (this may take some time)
     try:
-        if _is_gitlab_executor():
-            # in that case we use a named volume cause we are already running inside a docker container
-            # thus mounted volumes are not valid to the docker host
-            volumes = {_get_gitlab_volume_name(): {'bind': str(_CONTAINER_FOLDER)}}
-        else :
-            volumes = {host_folders[folder]:{"bind":container_variables["{}_FOLDER".format(str(folder).upper())]} for folder in _FOLDER_NAMES}
+        volumes = {host_folders[folder]:{"bind":container_variables["{}_FOLDER".format(str(folder).upper())]} for folder in _FOLDER_NAMES}
         container = docker_client.containers.run(docker_image_key,
             "run", detach=True, remove=False, volumes=volumes, environment=container_variables)
         response = container.wait()

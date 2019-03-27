@@ -1,9 +1,16 @@
-image: itisfoundation/gitlab-runner-python-alpine:3.6
+image: itisfoundation/gitlab-runner-docker:stable
 variables:
+  # docker in docker variant, see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker-executor
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
   # variables used for pytest: as gitlab-runner is itself running a docker, the mounted volume must be a named volume
   SC_CI_PYTEST_TMP_NAME: "gitlab_pytest_tmp"
   SC_CI_PYTEST_TMP: "/gitlab_pytest_tmp"
   SC_CI_TEST_IMAGE_PREFIX: $SC_CI_TESTING_REGISTRY/ci/$CI_PROJECT_NAME/$GITLAB_USER_LOGIN/$CI_COMMIT_REF_SLUG
+services:
+   - docker:dind
+before_script:
+  - docker info
 
 # --------------------------------------------------------------------------------------------
 # ------- {{ cookiecutter.project_slug }}
@@ -20,6 +27,9 @@ variables:
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make build
     - make push
+  environment:
+    name: testing/$CI_COMMIT_REG_NAME
+    url: $SC_CI_TEST_IMAGE_PREFIX
 
 {{ cookiecutter.project_slug }}-unit-test:
   stage: test
@@ -63,6 +73,9 @@ variables:
     - docker tag $SC_CI_TEST_IMAGE_PREFIX/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make push
+  environment:
+    name: staging
+    url: $SC_CI_STAGING_REGISTRY
 
 {{ cookiecutter.project_slug }}-production:
   stage: deploy
@@ -77,3 +90,6 @@ variables:
     - docker tag $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_PRODUCTION_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export DOCKER_REGISTRY=$SC_CI_PRODUCTION_REGISTRY
     - make push-release
+  environment:
+    name: production
+    url: $SC_CI_PRODUCTION_REGISTRY
