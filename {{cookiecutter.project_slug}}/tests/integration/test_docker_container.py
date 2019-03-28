@@ -5,6 +5,7 @@
 # pylint:disable=redefined-outer-name
 
 import filecmp
+import json
 import os
 import shutil
 from pathlib import Path
@@ -66,7 +67,8 @@ def container_variables() -> Dict:
 def validation_folders(validation_dir: Path) -> Dict:
     return {folder:(validation_dir / folder) for folder in _FOLDER_NAMES}
 
-def test_run_container(validation_folders: Dict, host_folders: Dict, docker_client: docker.DockerClient, docker_image_key: str, container_variables: Dict):
+@pytest.fixture
+def docker_container(validation_folders: Dict, host_folders: Dict, docker_client: docker.DockerClient, docker_image_key: str, container_variables: Dict) -> docker.models.containers.Container:
     # copy files to input folder, copytree needs to not have the input folder around.
     host_folders["input"].rmdir()
     shutil.copytree(validation_folders["input"], host_folders["input"])
@@ -83,6 +85,8 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
             "run", pformat(
                 (container.logs(timestamps=True).decode("UTF-8")).split("\n"), width=200
                 )))
+        else:
+            yield container
     except docker.errors.ContainerError as exc:
         # the container did not run correctly
         pytest.fail("The container stopped with exit code {}\n\n\ncommand:\n {}, \n\n\nlog:\n{}".format(exc.exit_status,
@@ -93,6 +97,20 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
         #cleanup
         container.remove()
 
+def _convert_to_simcore_labels(image_labels: Dict) -> Dict:
+    io_simcore_labels = {}
+    for key, value in image_labels.items():
+        if str(key).startswith("io.simcore."):
+            simcore_label = json.loads(value)
+            simcore_keys = list(simcore_label.keys())
+            assert len(simcore_keys) == 1
+            simcore_key = simcore_keys[0]
+            simcore_value = simcore_label[simcore_key]
+            io_simcore_labels[simcore_key] = simcore_value
+    assert len(io_simcore_labels) > 0
+    return io_simcore_labels
+
+def test_run_container(validation_folders: Dict, host_folders: Dict, docker_container: docker.models.containers.Container):
     for folder in _FOLDER_NAMES:
         # test if the files that should be there are actually there and correct
         list_of_files = [x.name for x in validation_folders[folder].iterdir() if not ".gitkeep" in x.name]
@@ -109,3 +127,30 @@ def test_run_container(validation_folders: Dict, host_folders: Dict, docker_clie
             match, mismatch, errors = filecmp.cmpfiles(host_folders[folder], validation_folders[folder], list_of_files, shallow=False)
             # assert not mismatch, "wrong/incorrect generated files in {}".format(host_folders[folder])
             assert not errors, "too many files in {}".format(host_folders[folder])
+
+    # check the output is correct based on container labels
+    output_cfg = {}
+    output_cfg_file = Path(host_folders["output"] / "output.json")
+    if output_cfg_file.exists():
+        with output_cfg_file.open() as fp:
+            output_cfg = json.load(fp)
+
+    container_labels = docker_container.labels
+    io_simcore_labels = _convert_to_simcore_labels(container_labels)
+    assert "outputs" in io_simcore_labels
+    for key, value in io_simcore_labels["outputs"].items():
+        assert "type" in value
+        # rationale: files are on their own and other types are in input.json
+        if not "data:" in value["type"]:
+            # check that keys are available
+            assert key in output_cfg
+        else:
+            # it's a file and it should be in the folder as well using key as the filename
+            filename_to_look_for = key
+            if "fileToKeyMap" in value:
+                # ...or there is a mapping
+                assert len(value["fileToKeyMap"]) > 0
+                for filename, mapped_value in value["fileToKeyMap"].items():
+                    assert mapped_value == key
+                    filename_to_look_for = filename
+            assert (host_folders["output"] / filename_to_look_for).exists()
