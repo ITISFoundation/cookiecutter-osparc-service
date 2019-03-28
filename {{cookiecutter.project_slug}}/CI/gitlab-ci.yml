@@ -57,7 +57,7 @@ variables:
     - master
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - echo "SC_$CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
+    - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
     - cd models/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
