@@ -34,6 +34,8 @@ variables:
     reports:
       junit:
         - models/{{ cookiecutter.project_slug }}/pytest_unittest.xml
+    paths:
+      - models/{{ cookiecutter.project_slug }}/pytest_unittest.xml
 
 {{ cookiecutter.project_slug }}-integration-test:
   stage: test
@@ -50,6 +52,8 @@ variables:
     reports:
       junit:
         - models/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
+    paths:
+      - models/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
 
 {{ cookiecutter.project_slug }}-staging:
   stage: deploy
