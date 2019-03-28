@@ -87,7 +87,7 @@ unit-test:
 
 # target: integration-test – Runs integration tests [w/ fail fast] (needs built container)
 integration-test:
-	"pytest" -x -v --junitxml=pytest_integrationtest.xml--log-level=warning tests/integration
+	"pytest" -x -v --junitxml=pytest_integrationtest.xml --log-level=warning tests/integration
 
 .PHONY: push-release push-staging
 # target: push-release, push-staging: – Pushes services to the registry if service not available in registry. push-staging overwrites.
