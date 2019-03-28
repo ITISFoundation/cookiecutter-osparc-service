@@ -70,6 +70,8 @@ def test_validation_data_follows_definition(label_cfg: Dict, validation_cfg: Dic
                     assert mapped_value == key
                     filename_to_look_for = filename
                     assert (validation_folder / filename_to_look_for).exists()
+            else:
+                assert (validation_folder / filename_to_look_for).exists()
 
     if validation_cfg:
         for key, value in validation_cfg.items():
