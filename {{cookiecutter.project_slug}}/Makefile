@@ -132,7 +132,6 @@ push:
 
 pull:
 	# pull latest service version if available
-	${DOCKER} login ${DOCKER_REGISTRY};\
 	${DOCKER} pull \
 		${DOCKER_REGISTRY}/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}:latest || true;
 
