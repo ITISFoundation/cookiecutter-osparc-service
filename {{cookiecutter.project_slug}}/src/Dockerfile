@@ -10,7 +10,7 @@ LABEL maintainer={{ cookiecutter.git_username }}
 
 # simcore-user uid=8004(${SC_USER_NAME}) gid=8004(${SC_USER_NAME}) groups=8004(${SC_USER_NAME})
 ENV SC_USER_ID 8004
-ENV SC_USER_NAME ${SC_USER_NAME}
+ENV SC_USER_NAME scu
 RUN adduser -D -u ${SC_USER_ID} -s /bin/sh -h /home/${SC_USER_NAME} ${SC_USER_NAME}
 
 RUN apk add --no-cache \
