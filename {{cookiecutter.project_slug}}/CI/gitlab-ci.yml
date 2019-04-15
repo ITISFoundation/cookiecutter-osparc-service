@@ -25,6 +25,9 @@ before_script:
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make build
     - make push
+  only:
+    changes:
+      - models/{{ cookiecutter.project_slug }}/*
   environment:
     name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
     on_stop: remove_{{ cookiecutter.project_slug }}_builds
@@ -52,6 +55,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - pip install -r models/{{ cookiecutter.project_slug }}/tests/requirements.txt
     - cd models/{{ cookiecutter.project_slug }}
     - make unit-test
+  only:
+    changes:
+      - models/{{ cookiecutter.project_slug }}/*
   artifacts:
     reports:
       junit:
@@ -70,6 +76,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
     - make integration-test
+  only:
+    changes:
+      - models/{{ cookiecutter.project_slug }}/*
   artifacts:
     reports:
       junit:
