@@ -4,6 +4,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
   # have some prefix so it may help for garbage collecting in the registry
+  SC_CI_PROJECT_PATH_NAME: ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
   SC_CI_TEST_IMAGE_PREFIX: $SC_CI_TESTING_REGISTRY/ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
 services:
    - docker:dind
@@ -24,6 +25,24 @@ before_script:
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make build
     - make push
+  environment:
+    name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
+    on_stop: remove_{{ cookiecutter.project_slug }}_builds
+
+remove_{{ cookiecutter.project_slug }}_builds:
+  stage: build
+  # variables:
+  #   GIT_STRATEGY: none
+  script:
+    - export DOCKER_REGISTRY=$SC_CI_TESTING_REGISTRY
+    - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
+    - export API_USER=$SC_CI_TESTING_REGISTRY_USER
+    - export API_TOKEN=$SC_CI_TESTING_REGISTRY_PORTUS_TOKEN
+    - bash ops/docker-registry/delete-image-from-registry-portus
+  when: manual
+  environment:
+    name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
+    action: stop
 
 {{ cookiecutter.project_slug }}-unit-test:
   stage: test
@@ -72,7 +91,7 @@ before_script:
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make push
   environment:
-    name: staging
+    name: {{ cookiecutter.project_slug }}-staging
     url: $SC_CI_STAGING_REGISTRY
 
 {{ cookiecutter.project_slug }}-production:
@@ -89,5 +108,5 @@ before_script:
     - export DOCKER_REGISTRY=$SC_CI_PRODUCTION_REGISTRY
     - make push-release
   environment:
-    name: production
+    name: {{ cookiecutter.project_slug }}-production
     url: $SC_CI_PRODUCTION_REGISTRY
