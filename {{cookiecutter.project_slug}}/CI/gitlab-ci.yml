@@ -34,14 +34,12 @@ before_script:
 
 remove_{{ cookiecutter.project_slug }}_builds:
   stage: build
-  # variables:
-  #   GIT_STRATEGY: none
   script:
     - export DOCKER_REGISTRY=$SC_CI_TESTING_REGISTRY
     - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export API_USER=$SC_CI_TESTING_REGISTRY_USER
     - export API_TOKEN=$SC_CI_TESTING_REGISTRY_PORTUS_TOKEN
-    - bash ops/docker-registry/delete-image-from-registry-portus
+    - bash models/{{ cookiecutter.project_slug }}/CI/delete-image-from-registry-portus # this will fail if registry is not available through Portus
   when: manual
   environment:
     name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
