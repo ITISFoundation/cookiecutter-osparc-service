@@ -6,7 +6,7 @@ variables:
   # have some prefix so it may help for garbage collecting in the registry
   SC_CI_PROJECT_PATH_NAME: ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
   SC_CI_TEST_IMAGE_PREFIX: $SC_CI_TESTING_REGISTRY/ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
-  SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION: models/{{ cookiecutter.project_slug }}
+  SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION: models/{{ cookiecutter.project_slug }}
 services:
    - docker:dind
 before_script:
@@ -20,7 +20,7 @@ before_script:
     - production
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make pull
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
@@ -40,7 +40,7 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export API_USER=$SC_CI_TESTING_REGISTRY_USER
     - export API_TOKEN=$SC_CI_TESTING_REGISTRY_PORTUS_TOKEN
-    - bash $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/CI/delete-image-from-registry-portus # this will fail if registry is not available through Portus
+    - bash $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/CI/delete-image-from-registry-portus # this will fail if registry is not available through Portus
   when: manual
   environment:
     name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
@@ -51,8 +51,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
   except:
     - production
   script:
-    - pip install -r $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/tests/requirements.txt
-    - cd $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION
+    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - make unit-test
   only:
     changes:
@@ -60,9 +60,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
   artifacts:
     reports:
       junit:
-        - $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/pytest_unittest.xml
+        - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_unittest.xml
     paths:
-      - $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/pytest_unittest.xml
+      - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_unittest.xml
 
 {{ cookiecutter.project_slug }}-integration-test:
   stage: test
@@ -70,8 +70,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - production
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - pip install -r $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/tests/requirements.txt
-    - cd $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION
+    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
     - make integration-test
@@ -81,9 +81,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
   artifacts:
     reports:
       junit:
-        - $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/pytest_integrationtest.xml
+        - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
     paths:
-      - $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION/pytest_integrationtest.xml
+      - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
 
 {{ cookiecutter.project_slug }}-staging:
   stage: deploy
@@ -92,7 +92,7 @@ remove_{{ cookiecutter.project_slug }}_builds:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
     - docker tag $SC_CI_TEST_IMAGE_PREFIX/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
@@ -109,7 +109,7 @@ remove_{{ cookiecutter.project_slug }}_builds:
   script:
     - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
     - echo "$SC_CI_PRODUCTION_REGISTRY_PASSWORD" | docker login -u "$SC_CI_PRODUCTION_REGISTRY_USER" --password-stdin $SC_CI_PRODUCTION_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_slug.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make pull
     - docker tag $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_PRODUCTION_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
