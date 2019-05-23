@@ -18,7 +18,7 @@ before_script:
     - production
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - cd models/{{ cookiecutter.project_slug }}
+    - cd services/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make pull
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
@@ -30,15 +30,15 @@ before_script:
   except:
     - production
   script:
-    - pip install -r models/{{ cookiecutter.project_slug }}/tests/requirements.txt
-    - cd models/{{ cookiecutter.project_slug }}
+    - pip install -r services/{{ cookiecutter.project_slug }}/tests/requirements.txt
+    - cd services/{{ cookiecutter.project_slug }}
     - make unit-test
   artifacts:
     reports:
       junit:
-        - models/{{ cookiecutter.project_slug }}/pytest_unittest.xml
+        - services/{{ cookiecutter.project_slug }}/pytest_unittest.xml
     paths:
-      - models/{{ cookiecutter.project_slug }}/pytest_unittest.xml
+      - services/{{ cookiecutter.project_slug }}/pytest_unittest.xml
 
 {{ cookiecutter.project_slug }}-integration-test:
   stage: test
@@ -46,17 +46,17 @@ before_script:
     - production
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - pip install -r models/{{ cookiecutter.project_slug }}/tests/requirements.txt
-    - cd models/{{ cookiecutter.project_slug }}
+    - pip install -r services/{{ cookiecutter.project_slug }}/tests/requirements.txt
+    - cd services/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
     - make integration-test
   artifacts:
     reports:
       junit:
-        - models/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
+        - services/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
     paths:
-      - models/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
+      - services/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
 
 {{ cookiecutter.project_slug }}-staging:
   stage: deploy
@@ -65,7 +65,7 @@ before_script:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
-    - cd models/{{ cookiecutter.project_slug }}
+    - cd services/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
     - docker tag $SC_CI_TEST_IMAGE_PREFIX/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
@@ -82,7 +82,7 @@ before_script:
   script:
     - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
     - echo "$SC_CI_PRODUCTION_REGISTRY_PASSWORD" | docker login -u "$SC_CI_PRODUCTION_REGISTRY_USER" --password-stdin $SC_CI_PRODUCTION_REGISTRY
-    - cd models/{{ cookiecutter.project_slug }}
+    - cd services/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
     - make pull
     - docker tag $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_PRODUCTION_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
