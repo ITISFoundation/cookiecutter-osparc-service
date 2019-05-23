@@ -19,7 +19,7 @@ before_script:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - cd services/{{ cookiecutter.project_slug }}
-    - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
+    - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY
     - make pull
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make build
@@ -58,34 +58,34 @@ before_script:
     paths:
       - services/{{ cookiecutter.project_slug }}/pytest_integrationtest.xml
 
-{{ cookiecutter.project_slug }}-staging:
+{{ cookiecutter.project_slug }}-master:
   stage: deploy
   only:
     - master
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
+    - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
     - cd services/{{ cookiecutter.project_slug }}
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull
-    - docker tag $SC_CI_TEST_IMAGE_PREFIX/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
-    - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
+    - docker tag $SC_CI_TEST_IMAGE_PREFIX/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_MASTER_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
+    - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY
     - make push
   environment:
-    name: staging
-    url: $SC_CI_STAGING_REGISTRY
+    name: master
+    url: $SC_CI_MASTER_REGISTRY
 
 {{ cookiecutter.project_slug }}-production:
   stage: deploy
   only:
     - production
   script:
-    - echo "$SC_CI_STAGING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_STAGING_REGISTRY_USER" --password-stdin $SC_CI_STAGING_REGISTRY
+    - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
     - echo "$SC_CI_PRODUCTION_REGISTRY_PASSWORD" | docker login -u "$SC_CI_PRODUCTION_REGISTRY_USER" --password-stdin $SC_CI_PRODUCTION_REGISTRY
     - cd services/{{ cookiecutter.project_slug }}
-    - export DOCKER_REGISTRY=$SC_CI_STAGING_REGISTRY
+    - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY
     - make pull
-    - docker tag $SC_CI_STAGING_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_PRODUCTION_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
+    - docker tag $SC_CI_MASTER_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_PRODUCTION_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export DOCKER_REGISTRY=$SC_CI_PRODUCTION_REGISTRY
     - make push-release
   environment:
