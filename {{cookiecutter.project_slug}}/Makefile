@@ -65,7 +65,6 @@ build-devel: update_compose_labels update_run_script
 .PHONY: up down
 # target: up, down: – Starts/Stops services.
 up: down .tmp-folder .env
-	
 	${DOCKER_COMPOSE} -f docker-compose.yml up
 
 down:
