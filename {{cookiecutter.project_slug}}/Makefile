@@ -148,7 +148,7 @@ pull:
 		false; \
 	fi
 
-.PHONY: .tmp
+.PHONY: .tmp-folder
 .tmp-folder:
 	@rm -rf tmp
 	@mkdir -p tmp/output
