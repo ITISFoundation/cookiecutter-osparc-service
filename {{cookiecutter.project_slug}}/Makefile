@@ -92,7 +92,7 @@ info-build: ## displays info on the built image
 
 # TESTS----------------------------------- 
 .PHONY: tests tests-unit tests-integration
-tests-unit tests-integration: ## runts integration and unit tests
+tests-unit tests-integration: ## runs integration and unit tests
 	@.venv/bin/pytest -vv \
 		--basetemp=$(CURDIR)/tmp \
 		--exitfirst \
@@ -104,7 +104,6 @@ tests-unit tests-integration: ## runts integration and unit tests
 tests: tests-unit tests-integration ## runs unit and integration tests
 
 
-
 # PUBLISHING ----------------------------------- 
 define _bumpversion
 	# upgrades as $(subst $(1),,$@) version, commits and tags
@@ -114,11 +113,6 @@ endef
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: versioning/service.cfg ## kernel/service versioning as patch
 	@$(call _bumpversion,version-service-)
-
-.PHONY: version-integration-patch version-integration-minor version-integration-major
-version-integration-patch version-integration-minor version-integration-major: versioning/integration.cfg ## integration versioning as patch (bug fixes not affecting API/handling), minor/major (backwards-compatible/INcompatible API changes)
-	@$(call _bumpversion,version-integration-)
-
 
 .PHONY: push push-force push-version push-latest pull-latest pull-version tag-latest tag-version
 define _check-version-exists
@@ -150,6 +144,10 @@ push-latest push-version: ## publish service to registry with latest/version tag
 pull-latest pull-version: ## pull service from registry
 	@docker pull $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring production,$@),$(DOCKER_IMAGE_TAG),latest)
 
+
+.PHONY: version-integration-patch version-integration-minor version-integration-major
+version-integration-patch version-integration-minor version-integration-major: versioning/integration.cfg ## integration versioning as patch (bug fixes not affecting API/handling), minor/major (backwards-compatible/INcompatible API changes)
+	@$(call _bumpversion,version-integration-)
 
 
 # DEVELOPMENT ---------------------------------------- 
