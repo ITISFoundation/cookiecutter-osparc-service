@@ -19,7 +19,8 @@ before_script:
     - ubuntu_DOCKER
   stage: build
   except:
-    - staging
+    refs:
+      - staging
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
@@ -62,7 +63,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - ubuntu_DOCKER
   stage: test
   except:
-    - staging
+    refs:
+      - staging
   script:
     - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
     - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
@@ -85,7 +87,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - ubuntu_DOCKER
   stage: test
   except:
-    - staging
+    refs:
+      - staging
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
