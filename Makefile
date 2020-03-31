@@ -26,7 +26,7 @@ TEMPLATE = $(CURDIR)
 
 requirements.txt: .venv requirements.in
 	# freezes requirements
-	$</bin/pip-compile --verbose --output-file $@ requirements.in
+	$</bin/pip-compile --upgrade --build-isolation --output-file $@ $(word2, $^)
 
 devenv: .venv requirements.txt ## create a python virtual environment with tools to dev, run and tests cookie-cutter
 	# installing extra tools
