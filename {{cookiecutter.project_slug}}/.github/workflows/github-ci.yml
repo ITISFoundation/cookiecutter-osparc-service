@@ -6,9 +6,9 @@ on:
 
 env:
   # secrets can be set in settings/secrets on github
-  DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REGISTRY: {{ "${{ secrets.DOCKER_REGISTRY }}" }}
+  DOCKER_USERNAME: {{ "${{ secrets.DOCKER_USERNAME }}" }}
+  DOCKER_PASSWORD: {{ "${{ secrets.DOCKER_PASSWORD }}" }}
 
 
 jobs:
@@ -41,9 +41,11 @@ jobs:
       - name: get current image if available
         run: make pull-latest || true
       - name: build
-        run: make build
+        run: |
+          make build
+          make info build
       - name: test
         run: make tests
       - if: github.event_name == 'push'
-        name: deploy        
+        name: deploy
         run: make push
