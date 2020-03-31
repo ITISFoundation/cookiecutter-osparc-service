@@ -132,3 +132,10 @@ tmp/
 # make outputs
 pytest_*.xml
 .compose*
+
+# validation folder
+!validation/**/*
+# docker ignore
+!.dockerignore
+# git ignore
+!.gitignore
