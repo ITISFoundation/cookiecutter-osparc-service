@@ -45,7 +45,7 @@ commands = (
     "make devenv build up",
     "make devenv build-devel up-devel",
     "make info-build",
-    "make devenv build tests",
+    "make devenv build tests clean",
 )
 
 
