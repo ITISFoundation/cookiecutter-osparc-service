@@ -43,7 +43,7 @@ jobs:
       - name: build
         run: |
           make build
-          make info build
+          make info-build
       - name: test
         run: make tests
       - if: github.event_name == 'push'
