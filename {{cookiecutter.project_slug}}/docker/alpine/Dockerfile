@@ -85,7 +85,7 @@ WORKDIR /home/${SC_USER_NAME}
 # ------------------------------------------------------------------------------------
 
 # copy docker bootup scripts
-COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} docker/{%- if cookiecutter.docker_base.startswith("alpine") -%}alpine{%- elif cookiecutter.docker_base.startswith("python") -%}python{%- endif -%}/*.sh docker/
+COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} docker/{{ cookiecutter.docker_base.split(":")[0] }}/*.sh docker/
 
 {%- if cookiecutter.project_type == "computational" %}
 # copy simcore service cli
