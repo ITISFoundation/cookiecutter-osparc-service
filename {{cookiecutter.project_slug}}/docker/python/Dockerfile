@@ -49,7 +49,7 @@ COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter.project_package
 # ------------------------------------------------------------------------------------
 #TODO:
 # uncomment and adapt if build steps are necessary
-RUN cp -R src/{{ cookiecutter.project_package_name }}/* /build/bin
+# RUN cp -R src/{{ cookiecutter.project_package_name }}/* /build/bin
 # ------------------------------------------------------------------------------------
 
 # --------------------------Production stage -------------------
