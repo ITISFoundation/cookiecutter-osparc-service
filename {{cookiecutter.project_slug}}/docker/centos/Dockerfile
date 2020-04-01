@@ -44,8 +44,6 @@ ENV SC_BUILD_TARGET build
 #    yum clean all && \
 #    rm -rf /var/cache/yum
 
-# uncomment and adapt if python necessary
-#RUN $SC_PIP install --upgrade pip wheel setuptools
 # ------------------------------------------------------------------------------------
 
 WORKDIR /build
