@@ -70,9 +70,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
     refs:
       - staging
   script:
-    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
+    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/requirements.txt
     - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
-    - make tests-unit
+    - make unit-test
   only:
     refs:
       - branches
@@ -97,11 +97,11 @@ remove_{{ cookiecutter.project_slug }}_builds:
       - staging
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/tests/requirements.txt
+    - pip install -r $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/requirements.txt
     - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull-latest
-    - make tests-integration  
+    - make integration-test  
   only:
     refs:
       - branches
