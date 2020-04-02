@@ -16,6 +16,8 @@ before_script:
 # --------------------------------------------------------------------------------------------
 {{ cookiecutter.project_slug }}-build:
   stage: build
+  tags:
+    - ubuntu_DOCKER
   except:
     - staging
   script:
@@ -35,6 +37,8 @@ before_script:
 
 remove_{{ cookiecutter.project_slug }}_builds:
   stage: build
+  tags:
+    - ubuntu_DOCKER
   script:
     - export DOCKER_REGISTRY=$SC_CI_TESTING_REGISTRY
     - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
@@ -48,6 +52,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
 
 {{ cookiecutter.project_slug }}-unit-test:
   stage: test
+  tags:
+    - ubuntu_DOCKER
   except:
     - staging
   script:
@@ -66,6 +72,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
 
 {{ cookiecutter.project_slug }}-integration-test:
   stage: test
+  tags:
+    - ubuntu_DOCKER
   except:
     - staging
   script:
@@ -87,6 +95,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
 
 {{ cookiecutter.project_slug }}-master:
   stage: deploy
+  tags:
+    - ubuntu_DOCKER
   only:
     - master
   script:
@@ -104,6 +114,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
 
 {{ cookiecutter.project_slug }}-staging:
   stage: deploy
+  tags:
+    - ubuntu_DOCKER
   only:
     - staging
   script:
