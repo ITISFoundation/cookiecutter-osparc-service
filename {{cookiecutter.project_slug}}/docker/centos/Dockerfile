@@ -16,7 +16,7 @@ ENV SC_GROUP_NAME ${SC_USER_NAME}
 
 
 RUN groupadd --gid ${SC_GROUP_ID} ${SC_GROUP_NAME}
-RUN useradd -d /home/${SC_USER_NAME} --uid ${SC_USER_ID} --gid ${SC_GROUP_ID} --shell /bin/bash ${SC_USER_NAME}
+RUN useradd -d /home/${SC_USER_NAME} --uid ${SC_USER_ID} --gid ${SC_GROUP_ID} --shell /bin/sh ${SC_USER_NAME}
 
 RUN yum -y install epel-release && \
     yum -y install \
