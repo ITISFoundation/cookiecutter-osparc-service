@@ -39,7 +39,7 @@ CONT_GROUPNAME=$(getent group "${HOST_GROUPID}" | cut --delimiter=: --fields=1)
 if [ "$HOST_USERID" -eq 0 ]
 then
     echo "Warning: Folder mounted owned by root user... adding $SC_USER_NAME to root..."
-    useradd -g "$SC_USER_NAME" root
+    usermod -a -G root "$SC_USER_NAME"
 else
     echo "Folder mounted owned by user $HOST_USERID:$HOST_GROUPID-'$CONT_GROUPNAME'..."
     # take host's credentials in $SC_USER_NAME
