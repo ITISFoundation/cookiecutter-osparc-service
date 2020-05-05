@@ -127,6 +127,8 @@ remove_{{ cookiecutter.project_slug }}_builds:
   only:
     refs:
       - master
+    changes:
+      - "**/{{ cookiecutter.project_slug }}/**/*"
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
