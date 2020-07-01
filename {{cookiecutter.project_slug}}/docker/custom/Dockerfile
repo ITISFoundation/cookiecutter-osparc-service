@@ -1,4 +1,5 @@
-FROM {{ cookiecutter.docker_base }} as base
+# TODO: Please set your custom image here and adapt the Dockerfile/entrypoint.sh accordingly
+FROM ubuntu:latest as base 
 #
 #  USAGE:
 #     cd services/{{ cookiecutter.project_slug }}
