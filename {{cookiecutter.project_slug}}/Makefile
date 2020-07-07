@@ -11,19 +11,20 @@
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
-export VCS_URL:=$(shell git config --get remote.origin.url || echo unversioned)
-export VCS_REF:=$(shell git rev-parse --short HEAD || echo unversioned)
-export VCS_STATUS:=$(if $(shell git status -s || echo unversioned),'modified/untracked','clean')
-export BUILD_DATE:=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+export VCS_URL    := $(shell git config --get remote.origin.url || echo unversioned)
+export VCS_REF    := $(shell git rev-parse --short HEAD || echo unversioned)
+export VCS_STATUS := $(if $(shell git status -s || echo unversioned),'modified/untracked','clean')
+export BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-export DOCKER_REGISTRY ?= {{ cookiecutter.default_docker_registry }}
+export DOCKER_REGISTRY   ?= {{ cookiecutter.default_docker_registry }}
 export DOCKER_IMAGE_NAME ?= {{ cookiecutter.project_name.lower().replace(' ', '-') }}
-export DOCKER_IMAGE_TAG ?= $(shell cat VERSION)
+export DOCKER_IMAGE_TAG  ?= $(shell cat VERSION)
 
-export COMPOSE_INPUT_DIR := ./validation/input
+export COMPOSE_INPUT_DIR  := ./validation/input
 export COMPOSE_OUTPUT_DIR := .tmp/output
 
 APP_NAME := {{ cookiecutter.project_slug }}
+
 
 # ENVIRON ----------------------------------
 .PHONY: devenv
@@ -51,6 +52,7 @@ devenv: .venv requirements.txt ## create a python virtual environment with tools
 
 
 
+
 # INTEGRATION -----------------------------------
 metatada = metadata/metadata.yml
 service.cli/run: $(metatada)
@@ -69,6 +71,7 @@ $(if $(findstring -x,$@),\
 	docker-compose --file docker-compose-build.yml --file docker-compose-meta.yml build $(if $(findstring -nc,$@),--no-cache,) --parallel;\
 )
 endef
+
 
 
 
@@ -91,6 +94,7 @@ info-build: ## displays info on the built image
 
 
 
+
 # TESTS-----------------------------------
 .PHONY: tests tests-unit tests-integration
 tests-unit tests-integration: ## runs integration and unit tests
@@ -103,6 +107,8 @@ tests-unit tests-integration: ## runs integration and unit tests
 		$(CURDIR)/tests/$(subst tests-,,$@)
 
 tests: tests-unit tests-integration ## runs unit and integration tests
+
+
 
 
 # PUBLISHING -----------------------------------
@@ -148,6 +154,9 @@ version-integration-patch version-integration-minor version-integration-major: v
 	@$(call _bumpversion,$<,version-integration-)
 
 
+
+
+
 # DEVELOPMENT ----------------------------------------
 # NOTE: since using docker-compose would create the folders automatically but as root user, which is inconvenient
 define _clean_output_dirs
@@ -173,7 +182,6 @@ define _docker_compose_cli
 	@docker-compose -f $(docker_compose_path) $(1)
 endef
 
-
 .PHONY: down up up-devel shell shell-devel
 up up-devel: $(COMPOSE_INPUT_DIR) $(COMPOSE_OUTPUT_DIR) down ## Starts the service for testing. Devel mode mounts the folders for direct development.
 	# starting a service
@@ -185,6 +193,9 @@ shell shell-devel: $(COMPOSE_INPUT_DIR) $(COMPOSE_OUTPUT_DIR) down ## Starts a s
 
 down: .compose-development.yml ## stops the service
 	@docker-compose -f $< down
+
+
+
 
 
 
