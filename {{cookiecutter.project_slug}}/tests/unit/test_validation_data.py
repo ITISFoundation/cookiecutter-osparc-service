@@ -3,7 +3,7 @@
 # pylint:disable=redefined-outer-name
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Iterator, Optional
 
 import pytest
 
@@ -30,7 +30,7 @@ def validation_folder(validation_dir: Path, port_type: str) -> Path:
 
 
 @pytest.fixture
-def validation_cfg(validation_dir: Path, port_type: str) -> Dict:
+def validation_cfg(validation_dir: Path, port_type: str) -> Optional[Dict]:
     validation_file = validation_dir / \
         port_type / (f"{port_type}s.json")
     if validation_file.exists():
@@ -40,7 +40,7 @@ def validation_cfg(validation_dir: Path, port_type: str) -> Dict:
     return None
 
 
-def _find_key_in_cfg(filename: str, value: Dict) -> str:
+def _find_key_in_cfg(filename: str, value: Dict) -> Iterator[str]:
     for k, v in value.items():
         if k == filename:
             if isinstance(v, dict):
