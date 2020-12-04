@@ -1,5 +1,8 @@
-# tools
-pyyaml
+git+https://github.com/pcrespov/osparc-simcore.git@master#egg=simcore-models-library&subdirectory=packages/models-library
+git+https://github.com/pcrespov/osparc-simcore.git@master#egg=simcore-service-integration&subdirectory=packages/service-integration
+
+# formatter
+black
 
 # tests
 coverage
@@ -9,6 +12,4 @@ pytest
 pytest-cookies
 pytest-cov
 pytest-instafail
-pytest-mock
 pytest-sugar
-pyyaml
