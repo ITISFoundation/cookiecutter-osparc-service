@@ -101,3 +101,11 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 clean-force: clean
 	# removing .venv
 	-@rm -rf .venv
+
+
+.PHONY: info
+info: ## displays info about the scope
+	# python
+	@echo $(shell which python)
+	@python --version
+	@echo $(shell which pip)
