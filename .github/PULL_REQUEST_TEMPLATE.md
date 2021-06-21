@@ -1,6 +1,17 @@
 <!--
-Add **WIP-** prefix in title if still work in progress
+WIP: work in progress
 
+Consider prefix your PR message with an emoticon
+  🐛 bugfix
+  ✨ new feature
+  🔨 refactoring
+  🏗️ maintenance
+  📚 documentation
+
+and append (⚠️ devops) if changes in devops configuration required before deploying
+
+  SEE https://github.com/dannyfritz/commit-message-emoji
+  SEE https://emojipedia.org
 -->
 
 ## What do these changes do?
@@ -26,8 +37,12 @@ e.g.
 
 ## Checklist
 
-<!-- This is YOUR section.  Add here YOUR checklist -->
+<!-- This is YOUR section [OPTIONAL]
+
+
+Add here YOUR checklist/notes her and SEE the progress of the case!
 
 - [ ] Unit tests for the changes exist
 - [ ] Documentation reflects the changes
 - [ ] If you design a new module, add your user to .github/CODEOWNERS
+-->
