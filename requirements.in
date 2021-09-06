@@ -1,6 +1,3 @@
-urllib3~=1.26.6  # https://nvd.nist.gov/vuln/detail/CVE-2019-11324
-jinja2~=2.10.1   # https://nvd.nist.gov/vuln/detail/CVE-2019-8341
-
 coverage
 cookiecutter
 coverage
@@ -23,3 +20,10 @@ bump2version
 pip-tools
 yolk3k              # obtains info about installed packages or available in PyPi
 semantic_version    # check compatibility versioning
+
+
+# constraints ---
+# vulnerabilities
+urllib3~=1.26.6  
+jinja2~=3.0.1 
+
