@@ -6,7 +6,7 @@
 #
 arrow==1.1.1
     # via jinja2-time
-astroid==2.7.3
+astroid==2.8.0
     # via pylint
 attrs==21.2.0
     # via pytest
@@ -71,7 +71,7 @@ py==1.10.0
     # via pytest
 pycodestyle==2.7.0
     # via autopep8
-pylint==2.10.2
+pylint==2.11.1
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
@@ -119,6 +119,10 @@ toml==0.10.2
     #   pytest-cov
 tomli==1.2.1
     # via pep517
+typing-extensions==3.10.0.2
+    # via
+    #   astroid
+    #   pylint
 urllib3==1.26.6
     # via
     #   -r requirements.in
