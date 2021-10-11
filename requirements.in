@@ -25,5 +25,5 @@ semantic_version    # check compatibility versioning
 # constraints ---
 # vulnerabilities
 urllib3~=1.26.7  
-jinja2~=3.0.1 
+jinja2~=3.0.2 
 
