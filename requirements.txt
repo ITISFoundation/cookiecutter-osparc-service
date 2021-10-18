@@ -59,7 +59,7 @@ packaging==21.0
     #   pytest-sugar
 pep517==0.11.0
     # via pip-tools
-pip-tools==6.3.1
+pip-tools==6.4.0
     # via -r requirements.in
 platformdirs==2.3.0
     # via pylint
