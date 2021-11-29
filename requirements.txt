@@ -99,7 +99,7 @@ python-slugify==5.0.2
     # via cookiecutter
 requests==2.26.0
     # via cookiecutter
-rope==0.21.1
+rope==0.22.0
     # via -r requirements.in
 semantic-version==2.8.5
     # via -r requirements.in
