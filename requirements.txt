@@ -6,7 +6,7 @@
 #
 arrow==1.1.1
     # via jinja2-time
-astroid==2.8.0
+astroid==2.9.0
     # via pylint
 attrs==21.2.0
     # via pytest
@@ -71,7 +71,7 @@ py==1.10.0
     # via pytest
 pycodestyle==2.8.0
     # via autopep8
-pylint==2.11.1
+pylint==2.12.1
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
