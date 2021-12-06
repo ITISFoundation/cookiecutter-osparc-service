@@ -71,7 +71,7 @@ py==1.10.0
     # via pytest
 pycodestyle==2.8.0
     # via autopep8
-pylint==2.12.1
+pylint==2.12.2
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
