@@ -75,7 +75,7 @@ pylint==2.12.2
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
-pytest==6.2.5
+pytest==7.0.0
     # via
     #   -r requirements.in
     #   pytest-cookies
@@ -101,7 +101,7 @@ requests==2.26.0
     # via cookiecutter
 rope==0.22.0
     # via -r requirements.in
-semantic_version==2.9.0
+semantic-version==2.9.0
     # via -r requirements.in
 six==1.16.0
     # via
@@ -116,9 +116,10 @@ toml==0.10.2
     #   autopep8
     #   coverage
     #   pylint
-    #   pytest
 tomli==1.2.1
-    # via pep517
+    # via
+    #   pep517
+    #   pytest
 urllib3==1.26.8
     # via
     #   -r requirements.in
