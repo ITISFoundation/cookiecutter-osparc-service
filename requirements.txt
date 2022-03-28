@@ -6,7 +6,7 @@
 #
 arrow==1.1.1
     # via jinja2-time
-astroid==2.9.0
+astroid==2.11.2
     # via pylint
 attrs==21.2.0
     # via pytest
@@ -34,6 +34,8 @@ coverage[toml]==5.5
     # via
     #   -r requirements.in
     #   pytest-cov
+dill==0.3.4
+    # via pylint
 idna==3.2
     # via requests
 iniconfig==1.1.1
@@ -71,7 +73,7 @@ py==1.10.0
     # via pytest
 pycodestyle==2.8.0
     # via autopep8
-pylint==2.12.2
+pylint==2.13.2
     # via -r requirements.in
 pyparsing==2.4.7
     # via packaging
@@ -115,10 +117,10 @@ toml==0.10.2
     # via
     #   autopep8
     #   coverage
-    #   pylint
 tomli==1.2.1
     # via
     #   pep517
+    #   pylint
     #   pytest
 urllib3==1.26.8
     # via
