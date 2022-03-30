@@ -122,7 +122,7 @@ tomli==1.2.1
     #   pep517
     #   pylint
     #   pytest
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   -r requirements.in
     #   requests
