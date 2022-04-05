@@ -21,16 +21,11 @@ TEMPLATE = $(CURDIR)
 		pip \
 		wheel \
 		setuptools
-	# tooling
-	$@/bin/pip install pip-tools
 
-requirements.txt: .venv requirements.in
-	# freezes requirements
-	$</bin/pip-compile --upgrade --build-isolation --output-file $@ $(word2, $^)
 
-devenv: .venv requirements.txt ## create a python virtual environment with tools to dev, run and tests cookie-cutter
+devenv: .venv  ## create a python virtual environment with tools to dev, run and tests cookie-cutter
 	# installing extra tools
-	@$</bin/pip3 install -r  $(word 2,$^)
+	@$</bin/pip3 install -r requirements.txt
 	# your dev environment contains
 	@$</bin/pip3 list
 	@echo "To activate the virtual environment, run 'source $</bin/activate'"
