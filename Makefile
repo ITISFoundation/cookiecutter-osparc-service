@@ -15,6 +15,7 @@ TEMPLATE = $(CURDIR)
 #-----------------------------------
 .PHONY: devenv
 .venv:
+	@python3 --version
 	python3 -m venv $@
 	# upgrading package managers
 	$@/bin/pip install --upgrade \
