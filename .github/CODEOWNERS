@@ -10,5 +10,4 @@ Makefile                                  @pcrespov @sanderegg
 
 # NOTE: '/' denotes the root of the repository
 /.github/                                 @sanderegg @pcrespov
-/{{cookiecutter.project_slug}}            @sanderegg @pcrespov
 /ci/                                      @sanderegg
