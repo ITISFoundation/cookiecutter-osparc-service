@@ -58,17 +58,17 @@ devenv: .venv requirements.txt ## create a python virtual environment with tools
 METADATA := metadata/metadata.yml
 
 
-VERSION: $(METADATA)
+VERSION: $(METADATA) ## generates VERSION from metadata
 	# updating $<
-	@simcore-service-integrator get-version --metadata-file $< > $@
+	@ooil get-version --metadata-file $< > $@
 
-service.cli/run: $(METADATA)
+service.cli/run: $(METADATA) ## generates run from metadata
 	# Updates adapter script from metadata in $<
-	@simcore-service-integrator run-creator --metadata $< --runscript $@
+	@ooil run-creator --metadata $< --runscript $@
 
-docker-compose-meta.yml: $(METADATA)
+docker-compose-meta.yml: $(METADATA) ## generates docker-copose from metadata
 	# Injects metadata from $< as labels
-	@simcore-service-integrator update-compose-labels --compose $@ --metadata $<
+	@ooil compose --to-spec-file $@ --metadata $<
 
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
@@ -122,14 +122,14 @@ tests: tests-unit tests-integration ## runs unit and integration tests
 
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
-	simcore-service-integrator bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
+	ooil bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
 	# syncing metadata upstream
 	@$(MAKE) VERSION
 	@$(MAKE) docker-compose-meta.yml
 
 .PHONY: version-integration-patch version-integration-minor version-integration-major
 version-integration-patch version-integration-minor version-integration-major: $(METADATA) ## integration versioning as patch (bug fixes not affecting API/handling), minor/major (backwards-compatible/INcompatible API changes)
-	simcore-service-integrator bump-version --metadata-file $<  --upgrade $(subst version-integration-,,$@) integration-version
+	ooil bump-version --metadata-file $<  --upgrade $(subst version-integration-,,$@) integration-version
 	# syncing metadata upstream
 	@$(MAKE) docker-compose-meta.yml
 
@@ -235,14 +235,13 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 .PHONY: info
 info:
 	# integration tools
-	@simcore-service-integrator --version
+	@ooil --version
 	# variables
 	@echo "VCS_URL                     : $(VCS_URL)"
 	@echo "VCS_REF                     : $(VCS_REF)"
 	@echo "VCS_STATUS                  : $(VCS_STATUS)"
 	@echo "BUILD_DATE                  : $(BUILD_DATE)"
 	@echo "METADATA                    : $(METADATA)"
-	@echo "VERSION                     : $(shell cat VERSION)"
 	@echo "DOCKER_REGISTRY             : $(DOCKER_REGISTRY)"
 	@echo "DOCKER_IMAGE_NAME           : $(DOCKER_IMAGE_NAME)"
 	@echo "DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
