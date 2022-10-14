@@ -35,13 +35,5 @@
   "[makefile]": {
     "editor.insertSpaces": false
   },
-  "python.testing.pytestEnabled": true,
-  "shellcheck.executablePath": "${workspaceFolder}/scripts/shellcheck.bash",
-  "shellcheck.run": "onSave",
-  "shellcheck.enableQuickFix": true,
-  "python.formatting.provider": "black",
-  "python.sortImports.path": "${workspaceFolder}/.venv/bin/isort",
-  "python.sortImports.args": [
-    "--settings-path=${workspaceFolder}/.isort.cfg"
-  ]
+  "python.testing.pytestEnabled": true
 }
