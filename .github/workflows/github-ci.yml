@@ -15,7 +15,7 @@ jobs:
       matrix:
         python: [3.9]
         os: [ubuntu-20.04]
-        docker_buildx: [v0.5.1]
+        docker_buildx: [v0.8.2]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
