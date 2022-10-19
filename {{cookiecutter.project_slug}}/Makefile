@@ -51,7 +51,7 @@ devenv: .venv requirements-dev.txt ## create a python virtual environment with t
 
 
 # INTEGRATION -----------------------------------
-METADATA := metadata/metadata.yml
+METADATA := .osparc/metadata.yml
 
 
 VERSION: $(METADATA) ## generates VERSION from metadata
@@ -62,16 +62,16 @@ service.cli/run: $(METADATA) ## generates run from metadata
 	# Updates adapter script from metadata in $<
 	@ooil run-creator --metadata $< --runscript $@
 
-docker-compose-meta.yml: $(METADATA) ## generates docker-copose from metadata
+docker-compose.yml: $(METADATA) ## generates docker-compose
 	# Injects metadata from $< as labels
 	@ooil compose --to-spec-file $@ --metadata $<
 
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
 $(if $(findstring -x,$@),\
-	docker buildx > /dev/null; export DOCKER_CLI_EXPERIMENTAL=enabled; docker buildx bake  --file docker-compose-meta.yml --file docker-compose-build.yml $(if $(findstring -nc,$@),--no-cache,);,\
+	docker buildx > /dev/null; export DOCKER_CLI_EXPERIMENTAL=enabled; docker buildx bake  --file docker-compose.yml $(if $(findstring -nc,$@),--no-cache,);,\
 	$(if $(findstring -kit,$@),export DOCKER_BUILDKIT=1;export COMPOSE_DOCKER_CLI_BUILD=1;,) \
-	docker-compose --file docker-compose-meta.yml --file docker-compose-build.yml build $(if $(findstring -nc,$@),--no-cache,) --parallel;\
+	docker-compose --file docker-compose.yml build $(if $(findstring -nc,$@),--no-cache,) --parallel;\
 )
 endef
 
@@ -80,7 +80,7 @@ endef
 
 # DOCKER -----------------------------------
 .PHONY: build build-devel build-kit-devel build-x build-devel-x
-build build-devel build-kit build-kit-devel build-x build-devel-x: docker-compose-build.yml docker-compose-meta.yml service.cli/run ## builds images, -devel in development mode, -kit using docker buildkit, -x using docker buildX (if installed)
+build build-devel build-kit build-kit-devel build-x build-devel-x: docker-compose.yml service.cli/run ## builds images, -devel in development mode, -kit using docker buildkit, -x using docker buildX (if installed)
 	# building image local/${DOCKER_IMAGE_NAME}...
 	@$(call _docker_compose_build)
 
