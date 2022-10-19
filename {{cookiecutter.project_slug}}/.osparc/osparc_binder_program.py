@@ -18,6 +18,7 @@
 #       typer[all]>=0.6.1,<1.0.0
 #       typing_extensions ; python_version<'3.8'
 
+from curses import meta
 import importlib  # nopycln: import
 import importlib.util  # nopycln: import
 import inspect
@@ -37,9 +38,7 @@ import yaml
 from pydantic import (
     BaseModel,
     BaseSettings,
-    EmailStr,
     ValidationError,
-    constr,
     validate_arguments,
     validator,
 )
@@ -69,7 +68,6 @@ error_console = Console(stderr=True)
 class ConfigSettings(BaseModel):
     image: Optional[str] = None
     bind_functions: list[str]
-    metadata: dict[str, Any] = {}
 
 
 def discover_published_functions(
@@ -117,20 +115,6 @@ def discover_published_functions(
 # ----------------------------------------------------------------------------------------------------------
 # CONFIG
 # ----------------------------------------------------------------------------------------------------------
-
-
-class Author(BaseModel):
-    name: str
-    email: EmailStr
-    affiliation: str
-
-
-# cg1 = major, cg2 = minor, cg3 = patch, cg4 = prerelease and cg5 = buildmetadata
-SEMANTIC_VERSION_RE2 = r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-
-
-class VersionStr(str):
-    __root__ = constr(regex=SEMANTIC_VERSION_RE2)
 
 
 class SchemaResolver:
@@ -188,13 +172,7 @@ class SchemaResolver:
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def dump_dot_osparc_config(
     core_func: Callable,
-    version: VersionStr,
-    authors: list[Author],
-    contact: Optional[EmailStr] = None,
 ):
-    if contact is None:
-        contact = authors[0].email
-
     def _create_inputs(parameters: Mapping[str, Parameter]) -> dict[str, Any]:
         inputs = {}
         for parameter in parameters.values():
@@ -273,20 +251,32 @@ def dump_dot_osparc_config(
     outputs = _create_outputs(signature.return_annotation)
 
     # TODO: sync this with metadata and runtime models!
+    # TODO: read from .osparc/metadata
+    config_folder = DOT_OSPARC_DIR / core_func.__name__
+    config_folder.mkdir(parents=True, exist_ok=True)
 
+    metadata_path = config_folder / "metadata.yml"
     metadata = {
         "name": f"{core_func.__name__}",
         "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Test.svg/315px-Test.svg.png",
         "description": "",
         "key": f"simcore/services/comp/ofs-{core_func.__name__}",
-        "version": version,
         "integration-version": "1.0.0",
         "type": "computational",
-        "authors": [a.dict() for a in authors],
-        "contact": contact,
-        "inputs": inputs,
-        "outputs": outputs,
     }
+
+    try:
+        prev_metadata = yaml.safe_load(metadata_path.read_text())
+        metadata.update(prev_metadata)
+    except Exception:
+        pass
+
+    metadata.update(
+        **{
+            "inputs": inputs,
+            "outputs": outputs,
+        }
+    )
     runtime = {
         "settings": [
             {
@@ -298,9 +288,6 @@ def dump_dot_osparc_config(
             },
         ]
     }
-
-    config_folder = DOT_OSPARC_DIR / core_func.__name__
-    config_folder.mkdir(parents=True, exist_ok=True)
 
     with (config_folder / "metadata.yml").open("wt") as fh:
         yaml.safe_dump(metadata, fh, indent=1, sort_keys=False)
@@ -437,7 +424,6 @@ def create_group(core_func: Callable, settings: dict[str, Any]) -> typer.Typer:
     @app.command()
     def config(
         dot_osparc_config: bool = True,
-        version: str = "0.1.0",
         jsonschema_inputs: bool = False,
     ):
         """echos configurations"""
@@ -451,8 +437,6 @@ def create_group(core_func: Callable, settings: dict[str, Any]) -> typer.Typer:
         elif dot_osparc_config:
             dump_dot_osparc_config(
                 core_func,
-                version=version,
-                authors=settings.get("metadata", {}).get("authors", []),
             )
             return
 
