@@ -24,13 +24,9 @@ VERSION := $(shell cat VERSION)
 		wheel \
 		setuptools
 
-requirements.txt: requirements.in
-	# freezes requirements
-	.venv/bin/pip-compile --upgrade --build-isolation --output-file $@ $(word2, $^)
-
 devenv: .venv  ## create a python virtual environment with tools to dev, run and tests cookie-cutter
 	# installing extra tools
-	@$</bin/pip3 install -r requirements.txt
+	@$</bin/pip3 install -r requirements-dev.txt
 	# your dev environment contains
 	@$</bin/pip3 list
 	@echo "To activate the virtual environment, run 'source $</bin/activate'"

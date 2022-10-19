@@ -17,6 +17,3 @@ pytest-sugar
 
 # package management
 bump2version
-pip-tools
-yolk3k              # obtains info about installed packages or available in PyPi
-semantic_version    # check compatibility versioning
