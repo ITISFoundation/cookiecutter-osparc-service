@@ -33,7 +33,11 @@ e.g.
 ## How to test
 
 <!-- Give reviewers some hits or code snippets on how could this be tested -->
-
+```cmd
+make devenv
+source .venv/bin/activate
+make play
+```
 
 ## Checklist
 
