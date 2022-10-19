@@ -13,7 +13,7 @@ OUTPUT_DIR = $(CURDIR)/.output
 TEMPLATE = $(CURDIR)
 VERSION := $(shell cat VERSION)
 
-#-----------------------------------
+# PYTHON ENVIRON -----------------------------------
 .PHONY: devenv
 .venv:
 	@python3 --version
@@ -43,7 +43,7 @@ tests: ## tests backed cookie
 		$(CURDIR)/tests
 
 
-#-----------------------------------
+# COOKIECUTTER -----------------------------------
 .PHONY: play
 
 $(OUTPUT_DIR):
@@ -68,45 +68,12 @@ endif
 	@echo "To see generated code, lauch 'code $(OUTPUT_DIR)'"
 
 
+# VERSION BUMP -------------------------------------------------------------------------------
 
 .PHONY: version-patch version-minor version-major
 version-patch version-minor version-major: ## commits version as patch (bug fixes not affecting the API), minor/minor (backwards-compatible/INcompatible API addition or changes)
 	# upgrades as $(subst version-,,$@) version, commits and tags
 	@bump2version --verbose  --list $(subst version-,,$@)
-
-
-#-----------------------------------
-.PHONY: help
-# thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-help: ## this colorful help
-	@echo "Recipes for '$(notdir $(CURDIR))':"
-	@echo ""
-	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-	@echo ""
-
-git_clean_args = -dxf --exclude=.vscode/ --exclude=.venv/ --exclude=.python
-
-.PHONY: clean clean-force
-clean: ## cleans all unversioned files in project and temp files create by this makefile
-	# Cleaning unversioned
-	@git clean -n $(git_clean_args)
-	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	@git clean $(git_clean_args)
-	-rm -rf $(OUTPUT_DIR)
-
-clean-force: clean
-	# removing .venv
-	-@rm -rf .venv
-
-
-.PHONY: info
-info: ## displays info about the scope
-	# python
-	@echo $(shell which python)
-	@python --version
-	@echo $(shell which pip)
-
 
 
 
@@ -146,3 +113,45 @@ release pre-release: .check-master-branch ## Creates github release link. Usage:
 	@echo -e "\e[33mOr open the following link to create a release and paste the logs:";
 	@echo -e "\e[32mhttps://github.com/$(_git_get_repo_orga_name)/releases/new?prerelease=$(if $(findstring pre-, $@),1,0)&target=$(_url_encoded_target)&tag=$(_url_encoded_tag)&title=$(_url_encoded_title)";
 	@echo -e "\e[34m$(_prettify_logs)"
+
+
+# TOOLS  -----------------------------------
+
+.PHONY: info
+info: ## displays info about the scope
+	# python
+	@which python
+	@python --version
+	@which pip
+	@pip --version
+	@pip list
+	@cookiecutter --version
+	# environs
+	@echo "VERSION   : $(VERSION)"
+	@echo "OUTPUT_DIR: $(OUTPUT_DIR)"
+	@echo "TEMPLATE: $(CURDIR)"
+	# cookiecutter config
+	@jq '.' cookiecutter.json
+
+.PHONY: clean clean-force
+
+git_clean_args = -dxf --exclude=.vscode/ --exclude=.venv/ --exclude=.python
+
+clean: ## cleans all unversioned files in project and temp files create by this makefile
+	# Cleaning unversioned
+	@git clean -n $(git_clean_args)
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@git clean $(git_clean_args)
+	-rm -rf $(OUTPUT_DIR)
+
+clean-force: clean
+	# removing .venv
+	-@rm -rf .venv
+
+.PHONY: help
+help: ## this colorful help
+	@echo "Recipes for '$(notdir $(CURDIR))':"
+	@echo ""
+	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
