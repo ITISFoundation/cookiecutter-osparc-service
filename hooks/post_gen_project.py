@@ -61,11 +61,20 @@ def create_repo_folder():
         shutil.rmtree(".gitlab")
 
 
+def check_python():
+    if "python" not in SELECTED_DOCKER_BASE:
+        Path(".osparc/osparc_binder_program.py").unlink(missing_ok=True)
+        Path(".osparc/requirements.txt").unlink(missing_ok=True)
+
+    # TODO: if python, then service.cli has to be removed!
+
+
 def main():
     try:
         create_dockerfile()
         create_ignore_listings()
         create_repo_folder()
+        check_python()
     except Exception as exc:  # pylint: disable=broad-except
         print(exc)
         return os.EX_SOFTWARE
