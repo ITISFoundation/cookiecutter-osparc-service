@@ -9,11 +9,12 @@ from pathlib import Path
 import os
 
 
-selected_flavor = "{{ cookiecutter.docker_base }}"
+SELECTED_DOCKER_BASE = "{{ cookiecutter.docker_base }}"
+SELECTED_GIT_REPO = "{{ cookiecutter.git_repo }}"
 
 
 def create_dockerfile():
-    folder_name = Path("docker") / selected_flavor.split(":")[0]
+    folder_name = Path("docker") / SELECTED_DOCKER_BASE.split(":")[0]
 
     # list folders
     # NOTE: it needs to be a list as we delete the folders
@@ -31,7 +32,7 @@ def create_ignore_listings():
     gitignore_file.unlink(missing_ok=True)
     shutil.copyfile(common_gitignore, gitignore_file)
 
-    if "python" in selected_flavor:
+    if "python" in SELECTED_DOCKER_BASE:
         with gitignore_file.open("at") as fh:
             fh.write("\n")
             fh.write(python_gitignore.read_text())
@@ -53,10 +54,18 @@ def create_ignore_listings():
     common_dockerignore.unlink()
 
 
+def create_repo_folder():
+    if SELECTED_GIT_REPO != "github":
+        shutil.rmtree(".github")
+    if SELECTED_GIT_REPO != "gitlab":
+        shutil.rmtree(".gitlab")
+
+
 def main():
     try:
         create_dockerfile()
         create_ignore_listings()
+        create_repo_folder()
     except Exception as exc:  # pylint: disable=broad-except
         print(exc)
         return os.EX_SOFTWARE

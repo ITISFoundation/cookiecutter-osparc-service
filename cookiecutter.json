@@ -18,6 +18,8 @@
     "python:3.6",
     "python:3.7",
     "python:3.8",
+    "python:3.9",
+    "python:3.10",
     "python:3.6-slim",
     "python:3.7-slim",
     "python:3.8-slim",
@@ -25,7 +27,10 @@
   ],
   "number_of_inputs": 2,
   "number_of_outputs": 1,
-  "project_git_repo": "https://github.com/ITISFoundation/{{ cookiecutter.project_slug }}",
+  "git_repo": [
+    "github",
+    "gitlab"
+  ],
   "git_username": "Yourusername",
   "default_docker_registry": "itisfoundation",
   "release_date": "{% now 'utc', '%Y' %}",
