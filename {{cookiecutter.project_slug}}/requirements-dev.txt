@@ -5,15 +5,5 @@ git+https://github.com/ITISFoundation/osparc-simcore.git@master#egg=simcore-serv
 # -e ../osparc-simcore/packages/models-library
 # -e ../osparc-simcore/packages/service-integration
 
-# formatter
 black
-
-# tests
-coverage
-docker
-jsonschema
-pytest
-pytest-cookies
-pytest-cov
-pytest-instafail
-pytest-sugar
+cookiecutter

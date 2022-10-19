@@ -40,11 +40,7 @@ APP_NAME := {{ cookiecutter.project_slug }}
 		pip-tools
 
 
-requirements.txt: .venv requirements.in
-	# freezes requirements
-	$</bin/pip-compile --build-isolation --output-file $@ $(word 2, $^)
-
-devenv: .venv requirements.txt ## create a python virtual environment with tools to dev, run and tests cookie-cutter
+devenv: .venv requirements-dev.txt ## create a python virtual environment with tools
 	# installing extra tools
 	@$</bin/pip3 install -r $(word 2, $^)
 	# your dev environment contains
