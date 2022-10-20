@@ -135,7 +135,7 @@ info: ## displays info about the scope
 
 .PHONY: clean clean-force
 
-git_clean_args = -dxf --exclude=.vscode/ --exclude=.venv/ --exclude=.python
+git_clean_args = -dx --force --exclude=.vscode/ --exclude=.venv/ --exclude=.python
 
 clean: ## cleans all unversioned files in project and temp files create by this makefile
 	# Cleaning unversioned
@@ -143,11 +143,11 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	@git clean $(git_clean_args)
-	-rm -rf $(OUTPUT_DIR)
+	-rm -r --force $(OUTPUT_DIR)
 
 clean-force: clean
 	# removing .venv
-	-@rm -rf .venv
+	-@rm -r --force .venv
 
 .PHONY: help
 help: ## this colorful help
