@@ -1,4 +1,4 @@
-## Common.gitignore
+## Common.dockerignore
 
 *
 !src/
