@@ -68,19 +68,14 @@ docker-compose.yml: $(METADATA) ## generates docker-compose
 
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
-$(if $(findstring -x,$@),\
-	docker buildx > /dev/null; export DOCKER_CLI_EXPERIMENTAL=enabled; docker buildx bake  --file docker-compose.yml $(if $(findstring -nc,$@),--no-cache,);,\
-	$(if $(findstring -kit,$@),export DOCKER_BUILDKIT=1;export COMPOSE_DOCKER_CLI_BUILD=1;,) \
-	docker-compose --file docker-compose.yml build $(if $(findstring -nc,$@),--no-cache,) --parallel;\
-)
+	docker buildx bake  --file docker-compose.yml $(if $(findstring -nc,$@),--no-cache,);
 endef
 
 
 
-
 # DOCKER -----------------------------------
-.PHONY: build build-devel build-kit-devel build-x build-devel-x
-build build-devel build-kit build-kit-devel build-x build-devel-x: docker-compose.yml service.cli/run ## builds images, -devel in development mode, -kit using docker buildkit, -x using docker buildX (if installed)
+.PHONY: build build-devel build-nc build-devel-nc
+build build-devel build-nc build-devel-nc: docker-compose.yml service.cli/run ## builds image
 	# building image local/${DOCKER_IMAGE_NAME}...
 	@$(call _docker_compose_build)
 
@@ -121,13 +116,7 @@ version-service-patch version-service-minor version-service-major: $(METADATA) #
 	ooil bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
 	# syncing metadata upstream
 	@$(MAKE) VERSION
-	@$(MAKE) docker-compose-meta.yml
 
-.PHONY: version-integration-patch version-integration-minor version-integration-major
-version-integration-patch version-integration-minor version-integration-major: $(METADATA) ## integration versioning as patch (bug fixes not affecting API/handling), minor/major (backwards-compatible/INcompatible API changes)
-	ooil bump-version --metadata-file $<  --upgrade $(subst version-integration-,,$@) integration-version
-	# syncing metadata upstream
-	@$(MAKE) docker-compose-meta.yml
 
 .PHONY: tag-local
 tag-local:
@@ -172,14 +161,14 @@ $(COMPOSE_OUTPUT_DIR):
 
 docker-compose-configs = $(wildcard docker-compose.*yml)
 
-.compose-production.yml .compose-development.yml: $(docker-compose-configs)
+.compose-test.yml .compose-development.yml: $(docker-compose-configs)
 	# creating config for stack with 'local/$(DOCKER_IMAGE_NAME):$(patsubst .compose-%.yml,%,$@)' to $@
 	@export DOCKER_REGISTRY=local; \
 	export DOCKER_IMAGE_TAG=$(patsubst .compose-%.yml,%,$@); \
-	docker-compose -f docker-compose.yml $(if $(findstring -development,$@), -f docker-compose.devel.yml,) --log-level=ERROR config > $@
+	docker-compose -f docker-compose.yml $(if $(findstring -development,$@), -f docker-compose.devel.yml,) $(if $(findstring -test,$@), -f docker-compose.test.yml,) --log-level=ERROR config > $@
 
 define _docker_compose_cli
-	$(eval docker_compose_path=.compose-$(if $(findstring devel,$@),development,production).yml)
+	$(eval docker_compose_path=.compose-$(if $(findstring devel,$@),development,test).yml)
 	$(MAKE) $(docker_compose_path)
 	@docker-compose -f $(docker_compose_path) $(1)
 endef
