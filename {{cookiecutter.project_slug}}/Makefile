@@ -55,7 +55,7 @@ METADATA := .osparc/metadata.yml
 
 
 VERSION: $(METADATA) ## generates VERSION from metadata
-	# updating $<
+	# updating $@ from $<
 	@ooil get-version --metadata-file $< > $@
 
 service.cli/run: $(METADATA) ## generates run from metadata
