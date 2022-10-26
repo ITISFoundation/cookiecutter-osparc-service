@@ -49,22 +49,21 @@ devenv: .venv requirements-dev.txt ## create a python virtual environment with t
 
 
 
-
 # INTEGRATION -----------------------------------
 METADATA := .osparc/metadata.yml
 
 
 VERSION: $(METADATA) ## generates VERSION from metadata
 	# updating $@ from $<
-	@ooil get-version --metadata-file $< > $@
+	@./scripts/ooil.bash get-version --metadata-file $< > $@
 
 service.cli/run: $(METADATA) ## generates run from metadata
 	# Updates adapter script from metadata in $<
-	@ooil run-creator --metadata $< --runscript $@
+	@./scripts/ooil.bash run-creator --metadata $< --runscript $@
 
 docker-compose.yml: $(METADATA) ## generates docker-compose
 	# Injects metadata from $< as labels
-	@ooil compose --to-spec-file $@ --metadata $<
+	@./scripts/ooil.bash compose --to-spec-file $@ --metadata $<
 
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
@@ -113,7 +112,7 @@ tests: tests-unit tests-integration ## runs unit and integration tests
 
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
-	ooil bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
+	./scripts/ooil.bash bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
 	# syncing metadata upstream
 	@$(MAKE) VERSION
 
@@ -220,7 +219,7 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 .PHONY: info
 info:
 	# integration tools
-	@ooil --version
+	@./scripts/ooil.bash --version
 	# variables
 	@echo "VCS_URL                     : $(VCS_URL)"
 	@echo "VCS_REF                     : $(VCS_REF)"
