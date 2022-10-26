@@ -1,7 +1,4 @@
-
-git+https://github.com/ITISFoundation/osparc-simcore.git@master#egg=simcore-models-library&subdirectory=packages/models-library
-git+https://github.com/ITISFoundation/osparc-simcore.git@master#egg=simcore-service-integration&subdirectory=packages/service-integration
-
+# FIXME: just for debugging
 # -e ../osparc-simcore/packages/models-library
 # -e ../osparc-simcore/packages/service-integration
 
