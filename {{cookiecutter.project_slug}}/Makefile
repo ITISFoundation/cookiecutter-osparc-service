@@ -26,27 +26,6 @@ export COMPOSE_OUTPUT_DIR := .tmp/output
 APP_NAME := {{ cookiecutter.project_slug }}
 
 
-# ENVIRON ----------------------------------
-.PHONY: devenv
-.venv:
-	python3 -m venv $@
-	# upgrading package managers
-	$@/bin/pip3 install --upgrade \
-		pip \
-		wheel \
-		setuptools
-	# tooling
-	$@/bin/pip3 install \
-		pip-tools
-
-
-devenv: .venv requirements-dev.txt ## create a python virtual environment with tools
-	# installing extra tools
-	@$</bin/pip3 install -r $(word 2, $^)
-	# your dev environment contains
-	@$</bin/pip3 list
-	@echo "To activate the virtual environment, run 'source $</bin/activate'"
-
 
 
 # INTEGRATION -----------------------------------
