@@ -7,11 +7,12 @@ set -o pipefail
 IFS=$'\n\t'
 
 IMAGE_NAME="itisfoundation/service-integration:master-github-latest"
+IMAGE_NAME="local/service-integration:production"
 WORKDIR="$(pwd)"
 
 run() {
   docker run \
-    --it \
+    -it \
     --rm \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \
@@ -27,6 +28,6 @@ run() {
 #
 # USAGE
 #    ./scripts/ooil.bash --help
+
 run "$@"
-echo "DONE"
 # ----------------------------------------------------------------------
