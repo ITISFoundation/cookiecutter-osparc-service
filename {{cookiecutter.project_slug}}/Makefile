@@ -28,7 +28,7 @@ APP_NAME := {{ cookiecutter.project_slug }}
 
 
 
-# INTEGRATION -----------------------------------
+# INTEGRATION -----------------------------------------------------------------
 METADATA := .osparc/metadata.yml
 
 
@@ -44,14 +44,16 @@ docker-compose.yml: $(METADATA) ## generates docker-compose
 	# Injects metadata from $< as labels
 	@./scripts/ooil.bash compose --to-spec-file $@ --metadata $<
 
+
+
+# BUILD -----------------------------------------------------------------
+
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
 	docker buildx bake  --file docker-compose.yml $(if $(findstring -nc,$@),--no-cache,);
 endef
 
 
-
-# DOCKER -----------------------------------
 .PHONY: build build-devel build-nc build-devel-nc
 build build-devel build-nc build-devel-nc: docker-compose.yml service.cli/run ## builds image
 	# building image local/${DOCKER_IMAGE_NAME}...
@@ -62,6 +64,7 @@ define show-meta
 		docker image inspect $(iid) | jq '.[0] | .RepoTags, .ContainerConfig.Labels, .Config.Labels';)
 endef
 
+
 info-build: ## displays info on the built image
 	# Built images
 	@docker images */$(DOCKER_IMAGE_NAME):*
@@ -69,25 +72,14 @@ info-build: ## displays info on the built image
 	@$(call show-meta,$(DOCKER_IMAGE_NAME))
 
 
+# TESTS-----------------------------------------------------------------
 
-
-# TESTS-----------------------------------
-.PHONY: tests tests-unit tests-integration
-tests-unit tests-integration: ## runs integration and unit tests
-	@.venv/bin/pytest -vv \
-		--basetemp=$(CURDIR)/tmp \
-		--exitfirst \
-		--failed-first \
-		--pdb \
-		--junitxml=pytest_$(subst tests-,,$@)test.xml \
-		$(CURDIR)/tests/$(subst tests-,,$@)
-
-tests: tests-unit tests-integration ## runs unit and integration tests
+tests:  ## runs validation tests
+	@./scripts/ooil.bash tests $(CURDIR)
 
 
 
-
-# PUBLISHING -----------------------------------
+# PUBLISHING -----------------------------------------------------------------
 
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
@@ -126,7 +118,8 @@ pull-latest pull-version: ## pull service from registry
 
 
 
-# DEVELOPMENT ----------------------------------------
+# DEVELOPMENT -----------------------------------------------------------------
+
 # NOTE: since using docker-compose would create the folders automatically but as root user, which is inconvenient
 define _clean_output_dirs
 	# cleaning output directory
@@ -164,11 +157,8 @@ down: .compose-development.yml ## stops the service
 	@docker-compose -f $< down
 
 
+# COOCKIECUTTER -----------------------------------------------------------------
 
-
-
-
-# MISCELANEOUS -----------------------------------
 .PHONY: replay
 replay: .cookiecutterrc ## re-applies cookiecutter
 	# Replaying {{ cookiecutter._template }} ...
@@ -178,25 +168,9 @@ replay: .cookiecutterrc ## re-applies cookiecutter
 		"{{ cookiecutter._template }}"
 
 
-.PHONY: help
-help: ## this colorful help
-	@echo "Recipes for '$(notdir $(CURDIR))':"
-	@echo ""
-	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-	@echo ""
-
-
-.PHONY: clean clean-force
-git_clean_args = -dxf --exclude=.vscode/ --exclude=.venv --exclude=.python-version
-clean: ## cleans all unversioned files in project and temp files create by this makefile
-	# Cleaning unversioned
-	@git clean -n $(git_clean_args)
-	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	@git clean $(git_clean_args)
 
 .PHONY: info
-info:
+info: ## general info
 	# integration tools
 	@./scripts/ooil.bash --version
 	# variables
@@ -210,3 +184,24 @@ info:
 	@echo "DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
 	@echo "COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
 	@echo "COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
+
+
+# MISC -----------------------------------------------------------------
+
+.PHONY: help
+help: ## this colorful help
+	@echo "Recipes for '$(notdir $(CURDIR))':"
+	@echo ""
+	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
+
+
+.PHONY: clean
+git_clean_args = -dxf --exclude=.vscode/
+
+clean: ## cleans all unversioned files in project and temp files create by this makefile
+	# Cleaning unversioned
+	@git clean -n $(git_clean_args)
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@git clean $(git_clean_args)
