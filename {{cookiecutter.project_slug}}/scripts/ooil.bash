@@ -6,8 +6,7 @@ set -o nounset
 set -o pipefail
 IFS=$'\n\t'
 
-IMAGE_NAME="itisfoundation/service-integration:master-github-latest"
-IMAGE_NAME="local/service-integration:production"
+IMAGE_NAME="${DOCKER_REGISTRY:-itisfoundation}/service-integration:${DOCKER_IMAGE_TAG:-master-github-latest}"
 WORKDIR="$(pwd)"
 
 run() {
