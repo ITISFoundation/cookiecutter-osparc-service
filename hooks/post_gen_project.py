@@ -64,13 +64,16 @@ def create_repo_folder():
 
 
 @contextmanager
-def context_print(msg):
-    print("-", msg, end="...")
+def context_print(
+    msg,
+):
+    print("-", msg, end="...", flush=True)
     yield
     print("DONE")
 
 
 def main():
+    print("Starting post-gen-project hook:", flush=True)
     try:
         with context_print("Pruning docker/ folder to selection"):
             create_dockerfile()

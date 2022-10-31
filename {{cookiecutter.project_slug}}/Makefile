@@ -65,6 +65,7 @@ define show-meta
 endef
 
 
+.PHONY: info-build
 info-build: ## displays info on the built image
 	# Built images
 	@docker images */$(DOCKER_IMAGE_NAME):*
@@ -73,9 +74,9 @@ info-build: ## displays info on the built image
 
 
 # TESTS-----------------------------------------------------------------
-
-tests:  ## runs validation tests
-	@./scripts/ooil.bash tests $(CURDIR)
+.PHONY: test tests
+test tests:  ## runs validation tests
+	@./scripts/ooil.bash test .
 
 
 
