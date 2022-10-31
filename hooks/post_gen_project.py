@@ -7,6 +7,7 @@ import shutil
 import sys
 from pathlib import Path
 import os
+from contextlib import contextmanager
 
 
 SELECTED_DOCKER_BASE = "{{ cookiecutter.docker_base }}"
@@ -18,8 +19,9 @@ def create_dockerfile():
 
     # list folders
     # NOTE: it needs to be a list as we delete the folders
-    for folder in list(Path("docker").glob("*/**")):
-        if folder.exists() and folder != folder_name:
+
+    for folder in list(f for f in Path("docker").glob("*") if f.is_dir()):
+        if folder != folder_name:
             shutil.rmtree(folder)
 
 
@@ -61,13 +63,26 @@ def create_repo_folder():
         shutil.rmtree(".gitlab")
 
 
+@contextmanager
+def context_print(msg):
+    print("-", msg, end="...")
+    yield
+    print("DONE")
+
+
 def main():
     try:
-        create_dockerfile()
-        create_ignore_listings()
-        create_repo_folder()
+        with context_print("Pruning docker/ folder to selection"):
+            create_dockerfile()
+
+        with context_print("Updating .gitignore and .dockerignore configs"):
+            create_ignore_listings()
+
+        with context_print("Adding config for selected external repository"):
+            create_repo_folder()
+
     except Exception as exc:  # pylint: disable=broad-except
-        print(exc)
+        print("ERROR", exc)
         return os.EX_SOFTWARE
     return os.EX_OK
 
