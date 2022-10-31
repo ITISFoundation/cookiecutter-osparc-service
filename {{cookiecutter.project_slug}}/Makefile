@@ -119,45 +119,6 @@ pull-latest pull-version: ## pull service from registry
 
 
 
-# DEVELOPMENT -----------------------------------------------------------------
-
-# NOTE: since using docker-compose would create the folders automatically but as root user, which is inconvenient
-define _clean_output_dirs
-	# cleaning output directory
-	rm -rf $(COMPOSE_OUTPUT_DIR)/*
-endef
-$(COMPOSE_OUTPUT_DIR):
-	@$(call _clean_output_dirs)
-	mkdir -p $@
-	# created output directory $(COMPOSE_OUTPUT_DIR)
-
-docker-compose-configs = $(wildcard docker-compose.*yml)
-
-.compose-test.yml .compose-development.yml: $(docker-compose-configs)
-	# creating config for stack with 'local/$(DOCKER_IMAGE_NAME):$(patsubst .compose-%.yml,%,$@)' to $@
-	@export DOCKER_REGISTRY=local; \
-	export DOCKER_IMAGE_TAG=$(patsubst .compose-%.yml,%,$@); \
-	docker-compose -f docker-compose.yml $(if $(findstring -development,$@), -f docker-compose.devel.yml,) $(if $(findstring -test,$@), -f docker-compose.test.yml,) --log-level=ERROR config > $@
-
-define _docker_compose_cli
-	$(eval docker_compose_path=.compose-$(if $(findstring devel,$@),development,test).yml)
-	$(MAKE) $(docker_compose_path)
-	@docker-compose -f $(docker_compose_path) $(1)
-endef
-
-.PHONY: down up up-devel shell shell-devel
-up up-devel: $(COMPOSE_INPUT_DIR) $(COMPOSE_OUTPUT_DIR) down ## Starts the service for testing. Devel mode mounts the folders for direct development.
-	# starting a service
-	$(call _docker_compose_cli,up)
-
-shell shell-devel: $(COMPOSE_INPUT_DIR) $(COMPOSE_OUTPUT_DIR) down ## Starts a shell instead of running the container. Useful for development.
-	# starting service and go in...
-	$(call _docker_compose_cli,run --service-ports $(APP_NAME) /bin/sh)
-
-down: .compose-development.yml ## stops the service
-	@docker-compose -f $< down
-
-
 # COOCKIECUTTER -----------------------------------------------------------------
 
 .PHONY: replay
