@@ -25,7 +25,8 @@
   "number_of_outputs": 1,
   "git_repo": [
     "github",
-    "gitlab"
+    "gitlab",
+    "local"
   ],
   "git_username": "Yourusername",
   "default_docker_registry": "itisfoundation",
