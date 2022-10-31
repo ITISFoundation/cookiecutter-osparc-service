@@ -13,6 +13,7 @@ run() {
   docker run \
     -it \
     --rm \
+    --pull=newer \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \
     --user="$(id --user "$USER")":"$(id --group "$USER")" \
