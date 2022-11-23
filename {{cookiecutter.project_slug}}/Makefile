@@ -34,6 +34,7 @@ APP_NAME := {{ cookiecutter.project_slug }}
 METADATA := .osparc/metadata.yml
 
 
+.PHONY: VERSION
 VERSION: $(METADATA) ## generates VERSION from metadata
 	# updating $@ from $<
 	@$(OSPARC_DIR)/bin/ooil.bash get-version --metadata-file $< > $@
