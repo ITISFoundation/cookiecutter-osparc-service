@@ -146,16 +146,20 @@ info: ## general info
 	@echo " COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
 	@echo " COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
 	@echo " BUILD_DATE                  : $(BUILD_DATE)"
-	# exe: dev tools
+	# exe: recommended dev tools
+	@echo ' git                         : $(shell git --version 2>/dev/null || echo not found)'
 	@echo ' make                        : $(shell make --version 2>&1 | head -n 1)'
-	@echo ' jq                          : $(shell jq --version)'
-	@echo ' awk                         : $(shell awk -W version 2>&1 | head -n 1)'
-	@echo ' python                      : $(shell python3 --version)'
+	@echo ' jq                          : $(shell jq --version 2>/dev/null || echo not found z)'
+	@echo ' awk                         : $(shell awk -W version 2>&1 | head -n 1 2>/dev/null || echo not found)'
+	@echo ' python                      : $(shell python3 --version 2>/dev/null || echo not found )'
 	@echo ' docker                      : $(shell docker --version)'
 	@echo ' docker buildx               : $(shell docker buildx version)'
 	@echo ' docker-compose              : $(shell docker-compose --version)'
 	# exe: integration tools
 	@echo ' ooil version                : $(shell $(OSPARC_DIR)/bin/ooil.bash --version)'
+
+
+
 # MISC -----------------------------------------------------------------
 
 .PHONY: help
