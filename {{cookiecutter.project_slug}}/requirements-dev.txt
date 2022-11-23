@@ -1,6 +1,0 @@
-# FIXME: just for debugging
-# -e ../osparc-simcore/packages/models-library
-# -e ../osparc-simcore/packages/service-integration
-
-black
-cookiecutter
