@@ -11,22 +11,24 @@
     "computational"
   ],
   "docker_base": [
+    "python:3.9-slim",
+    "python:3.9",
+    "python:3.10-slim",
+    "python:3.10",
+    "python:3.11-slim",
+    "python:3.11",
     "alpine:3.7",
     "alpine:3.8",
     "centos:7",
-    "custom:special-image",
-    "python:3.9",
-    "python:3.10",
-    "python:3.9-slim",
-    "python:3.10-slim",
-    "ubuntu:18.04"
+    "ubuntu:18.04",
+    "custom:special-image"
   ],
   "number_of_inputs": 2,
   "number_of_outputs": 1,
   "git_repo": [
+    "local",
     "github",
-    "gitlab",
-    "local"
+    "gitlab"
   ],
   "git_username": "Yourusername",
   "default_docker_registry": "itisfoundation",
