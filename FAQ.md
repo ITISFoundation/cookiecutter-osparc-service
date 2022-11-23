@@ -33,13 +33,6 @@ Test first
 ```
 docker run hello-world
 ```
-if you get a similar error then probably the problem is that your user is not allowed to run ``docker``. Basically, create a docker group (sometimes it is already created), add your user to the group, log in to the new docker group, check visually user's group
-```cmd
- $ sudo groupadd docker
- $ sudo usermod -aG docker $USER
- $ newgrp docker
- $ id $USER
-```
-SEE details in https://stackoverflow.com/a/48957722.
+if you get a similar error then probably the problem is that your user is not allowed to run ``docker``. Then follow https://docs.docker.com/engine/install/linux-postinstall/
 
 ---
