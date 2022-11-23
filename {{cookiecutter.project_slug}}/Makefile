@@ -23,6 +23,8 @@ export DOCKER_IMAGE_TAG  ?= $(shell cat VERSION 2> /dev/null || echo undefined)
 export COMPOSE_INPUT_DIR  := ./validation/input
 export COMPOSE_OUTPUT_DIR := .tmp/output
 
+OSPARC_BIN:=$(CURDIR)/.osparc/bin
+
 APP_NAME := {{ cookiecutter.project_slug }}
 
 
@@ -34,15 +36,15 @@ METADATA := .osparc/metadata.yml
 
 VERSION: $(METADATA) ## generates VERSION from metadata
 	# updating $@ from $<
-	@./scripts/ooil.bash get-version --metadata-file $< > $@
+	@$(OSPARC_BIN)/ooil.bash get-version --metadata-file $< > $@
 
 service.cli/run: $(METADATA) ## generates run from metadata
 	# Updates adapter script from metadata in $<
-	@./scripts/ooil.bash run-creator --metadata $< --runscript $@
+	@$(OSPARC_BIN)/ooil.bash run-creator --metadata $< --runscript $@
 
 docker-compose.yml: $(METADATA) ## generates docker-compose
 	# Injects metadata from $< as labels
-	@./scripts/ooil.bash compose --to-spec-file $@ --metadata $<
+	@$(OSPARC_BIN)/ooil.bash compose --to-spec-file $@ --metadata $<
 
 
 
@@ -76,7 +78,7 @@ info-build: ## displays info on the built image
 # TESTS-----------------------------------------------------------------
 .PHONY: test tests
 test tests:  ## runs validation tests
-	@./scripts/ooil.bash test .
+	@$(OSPARC_BIN)/ooil.bash test .
 
 
 
@@ -84,7 +86,7 @@ test tests:  ## runs validation tests
 
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
-	./scripts/ooil.bash bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
+	$(OSPARC_BIN)/ooil.bash bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
 	# syncing metadata upstream
 	@$(MAKE) VERSION
 
@@ -134,7 +136,7 @@ replay: .cookiecutterrc ## re-applies cookiecutter
 .PHONY: info
 info: ## general info
 	# integration tools
-	@./scripts/ooil.bash --version
+	@$(OSPARC_BIN)/ooil.bash --version
 	# variables
 	@echo "VCS_URL                     : $(VCS_URL)"
 	@echo "VCS_REF                     : $(VCS_REF)"
