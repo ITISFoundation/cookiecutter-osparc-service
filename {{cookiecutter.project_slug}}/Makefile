@@ -23,7 +23,7 @@ export DOCKER_IMAGE_TAG  ?= $(shell cat VERSION 2> /dev/null || echo undefined)
 export COMPOSE_INPUT_DIR  := ./validation/input
 export COMPOSE_OUTPUT_DIR := .tmp/output
 
-OSPARC_BIN:=$(CURDIR)/.osparc/bin
+OSPARC_DIR:=$(CURDIR)/.osparc
 
 APP_NAME := {{ cookiecutter.project_slug }}
 
@@ -36,15 +36,15 @@ METADATA := .osparc/metadata.yml
 
 VERSION: $(METADATA) ## generates VERSION from metadata
 	# updating $@ from $<
-	@$(OSPARC_BIN)/ooil.bash get-version --metadata-file $< > $@
+	@$(OSPARC_DIR)/bin/ooil.bash get-version --metadata-file $< > $@
 
 service.cli/run: $(METADATA) ## generates run from metadata
 	# Updates adapter script from metadata in $<
-	@$(OSPARC_BIN)/ooil.bash run-creator --metadata $< --runscript $@
+	@$(OSPARC_DIR)/bin/ooil.bash run-creator --metadata $< --runscript $@
 
 docker-compose.yml: $(METADATA) ## generates docker-compose
 	# Injects metadata from $< as labels
-	@$(OSPARC_BIN)/ooil.bash compose --to-spec-file $@ --metadata $<
+	@$(OSPARC_DIR)/bin/ooil.bash compose --to-spec-file $@ --metadata $<
 
 
 
@@ -78,7 +78,7 @@ info-build: ## displays info on the built image
 # TESTS-----------------------------------------------------------------
 .PHONY: test tests
 test tests:  ## runs validation tests
-	@$(OSPARC_BIN)/ooil.bash test .
+	@$(OSPARC_DIR)/bin/ooil.bash test .
 
 
 
@@ -86,7 +86,7 @@ test tests:  ## runs validation tests
 
 .PHONY: version-service-patch version-service-minor version-service-major
 version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
-	$(OSPARC_BIN)/ooil.bash bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
+	$(OSPARC_DIR)/bin/ooil.bash bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
 	# syncing metadata upstream
 	@$(MAKE) VERSION
 
@@ -135,21 +135,27 @@ replay: .cookiecutterrc ## re-applies cookiecutter
 
 .PHONY: info
 info: ## general info
-	# integration tools
-	@$(OSPARC_BIN)/ooil.bash --version
-	# variables
-	@echo "VCS_URL                     : $(VCS_URL)"
-	@echo "VCS_REF                     : $(VCS_REF)"
-	@echo "VCS_STATUS                  : $(VCS_STATUS)"
-	@echo "BUILD_DATE                  : $(BUILD_DATE)"
-	@echo "METADATA                    : $(METADATA)"
-	@echo "DOCKER_REGISTRY             : $(DOCKER_REGISTRY)"
-	@echo "DOCKER_IMAGE_NAME           : $(DOCKER_IMAGE_NAME)"
-	@echo "DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
-	@echo "COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
-	@echo "COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
-
-
+	# env vars: version control
+	@echo " VCS_URL                     : $(VCS_URL)"
+	@echo " VCS_REF                     : $(VCS_REF)"
+	@echo " VCS_STATUS                  : $(VCS_STATUS)"
+	# env vars: docker
+	@echo " DOCKER_REGISTRY             : $(DOCKER_REGISTRY)"
+	@echo " DOCKER_IMAGE_NAME           : $(DOCKER_IMAGE_NAME)"
+	@echo " DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
+	@echo " COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
+	@echo " COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
+	@echo " BUILD_DATE                  : $(BUILD_DATE)"
+	# exe: dev tools
+	@echo ' make                        : $(shell make --version 2>&1 | head -n 1)'
+	@echo ' jq                          : $(shell jq --version)'
+	@echo ' awk                         : $(shell awk -W version 2>&1 | head -n 1)'
+	@echo ' python                      : $(shell python3 --version)'
+	@echo ' docker                      : $(shell docker --version)'
+	@echo ' docker buildx               : $(shell docker buildx version)'
+	@echo ' docker-compose              : $(shell docker-compose --version)'
+	# exe: integration tools
+	@echo ' ooil version                : $(shell $(OSPARC_DIR)/bin/ooil.bash --version)'
 # MISC -----------------------------------------------------------------
 
 .PHONY: help
