@@ -2,35 +2,33 @@
 
 Status: ![Build Status](https://github.com/ITISFoundation/cookiecutter-osparc-service/workflows/Github-CI%20Push/PR/badge.svg)
 
-
-Cookiecutter to generate an oSparc compatible service for the oSparc simcore platform. Currently only for **computational services**.
+Cookiecutter to generate an oSparc compatible service for the oSparc simcore platform. Currently only for **computational services** supported.
 
 
 ## Requirements
+- GNU Make
+- Python3
+- Python3-venv (recommended to work in a virtual environment)
+- [``cookiecutter``](https://python-package-generator.readthedocs.io/en/master/)
 
-
-GNU Make
-Python3
-Python3-venv
-cookiecutter python package
 ```console
 sudo apt-get update
-sudo apt-get install -y make python3-venv   # install GNU Make, python3-venv (python3 is usually already installed)
-python3 -m venv .venv                       # create a python virtual environment
-source .venv/bin/activate                   # activate the python virtual environment
-pip install cookiecutter                    # install the cookicutter package
+sudo apt-get install -y make python3-venv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install cookiecutter
 ```
 
 ## Usage
 
 Generate a new Cookiecutter template layout:
 ```console
-python3 -m venv .venv                                          # create a python virtual environment
-source .venv/bin/activate                                      # activate the python virtual environment
-cookiecutter gh:ITISFoundation/cookiecutter-osparc-service     # generate a cookie (use cookiecutter --help for additional options)
+python3 -m venv .venv
+source .venv/bin/activate
+cookiecutter gh:ITISFoundation/cookiecutter-osparc-service
 ```
 
-
+Check [FAQ](./FAQ.md)
 
 
 ## Development
@@ -41,20 +39,8 @@ cd cookiecutter-osparc-service
 make devenv
 source .venv/bin/activate
 make play
-```
-
-## Testing
-
-```console
-git clone https://github.com/ITISFoundation/cookiecutter-osparc-service.git
-cd cookiecutter-osparc-service
-make devenv
-source .venv/bin/activate
 make tests
 ```
-
-
-
 
 ## License
 
