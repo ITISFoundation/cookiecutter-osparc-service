@@ -21,8 +21,6 @@ OSPARC_DIR:=$(CURDIR)/.osparc
 APP_NAME := {{ cookiecutter.project_slug }}
 
 
-
-
 # INTEGRATION -----------------------------------------------------------------
 METADATA := .osparc/metadata.yml
 
@@ -125,6 +123,7 @@ pull-latest pull-version: ## pull service from registry
 
 .PHONY: replay
 replay: .cookiecutterrc ## re-applies cookiecutter
+	## NOTE for developers: if you are using a branch, add '-c branch-name' to this script
 	# Replaying {{ cookiecutter._template }} ...
 	@cookiecutter --no-input --overwrite-if-exists \
 		--config-file=$< \
