@@ -1,7 +1,16 @@
 # {{ cookiecutter.project_slug }}
 
 {{ cookiecutter.project_short_description }}
+{% if "python" in cookiecutter.docker_base %}
 
+```console
+$ make help
+
+$ make config target=demo
+$ make build target=demo
+$ make shell target=demo
+```
+{% else %}
 ## Usage
 
 ```console
