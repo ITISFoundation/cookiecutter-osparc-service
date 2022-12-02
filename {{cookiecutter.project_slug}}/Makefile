@@ -74,6 +74,14 @@ shell: guard-service  ## starts container's shell
 		--entrypoint bash \
 		{{ cookiecutter.project_package_name }}-$(service)
 
+
+-include .env
+IMAGE=$(shell yq '.services.{{ cookiecutter.project_package_name }}-$(service).image' docker-compose.yml)
+
+publish: guard-service
+	docker tag $(IMAGE) $(REGISTRY_URL)/$(IMAGE)
+	docker push $(REGISTRY_URL)/$(IMAGE)
+
 {%- endif %}
 
 # INTEGRATION -----------------------------------------------------------------
