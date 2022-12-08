@@ -538,7 +538,7 @@ def create_cli(expose: list[Callable], settings: DotOsparcSettings) -> typer.Typ
 def load_settings(settings_path: Path) -> DotOsparcSettings:
     settings = DotOsparcSettings.parse_raw(settings_path.read_text())
 
-    if not settings.publish_functions:
+    if not settings.service_functions:
         value = input(
             f"Initializing {settings_path} ... \n"
             "Name a function to expose (e.g. {{ cookiecutter.project_package_name }}.my_function): "
