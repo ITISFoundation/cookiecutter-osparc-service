@@ -7,12 +7,9 @@
 ```console
 $ make help
 
-$ make devenv
-$ source .venv/bin/activate
-
-(.venv)$ make build
-(.venv)$ make info-build
-(.venv)$ make tests
+$ make build
+$ make info-build
+$ make tests
 ```
 
 ## Workflow
