@@ -1,12 +1,5 @@
 #
-# CONVENTIONS:
-#
-# - targets shall be ordered such that help list rensembles a typical workflow, e.g. 'make devenv tests'
-# - add doc to relevant targets
-# - internal targets shall start with '.'
-# - KISS
-#
-# author: {{ cookiecutter.author_name }}
+# Author: {{ cookiecutter.author_name }}
 
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
