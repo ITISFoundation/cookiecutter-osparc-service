@@ -19,7 +19,6 @@ WORKDIR="$(pwd)"
 
 run() {
   docker run \
-    --tty \
     --rm \
     --pull=always \
     --volume="/etc/group:/etc/group:ro" \
