@@ -9,7 +9,8 @@
 SHELL = /bin/bash
 .DEFAULT_GOAL := help
 
-OUTPUT_DIR = $(CURDIR)/.output
+
+OUTPUT_DIR := $(if $(COOCKIECUTTER_OUTPUT_DIR),$(COOCKIECUTTER_OUTPUT_DIR),$(CURDIR)/.output)
 TEMPLATE = $(CURDIR)
 VERSION := $(shell cat VERSION)
 
