@@ -1,0 +1,11 @@
+restart-policy: no-restart
+settings:
+  - name: Resources
+    type: Resources
+    value:
+      Limits:
+        NanoCPUs: 8000000000 # 8 CPUs
+        MemoryBytes: 17179869184 # 16 Gigabytes
+      Reservations:
+        NanoCPUs: 2000000000 # 2 CPUs
+        MemoryBytes: 2147483648 # 2 Gigabytes
