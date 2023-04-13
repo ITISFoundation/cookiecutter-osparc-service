@@ -38,26 +38,6 @@ before_script:
       - "**/{{ cookiecutter.project_slug }}/**/*"
   environment:
     name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
-    on_stop: remove_{{ cookiecutter.project_slug }}_builds
-
-remove_{{ cookiecutter.project_slug }}_builds:
-  stage: build
-  tags:
-    - DOCKER_modern
-  only:
-    refs:
-      - branches
-      - merge_requests
-  script:
-    - export DOCKER_REGISTRY=$SC_CI_TESTING_REGISTRY
-    - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
-    - export API_USER=$SC_CI_TESTING_REGISTRY_USER
-    - export API_TOKEN=$SC_CI_TESTING_REGISTRY_PORTUS_TOKEN
-    - bash $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/.gitlab/delete-image-from-registry-portus.bash # this will fail if registry is not available through Portus
-  when: manual
-  environment:
-    name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
-    action: stop
 
 {{ cookiecutter.project_slug }}-test:
   stage: test
@@ -84,27 +64,3 @@ remove_{{ cookiecutter.project_slug }}_builds:
         - $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/pytest_integrationtest.xml
     paths:
       - $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/pytest_integrationtest.xml
-
-{{ cookiecutter.project_slug }}-master:
-  stage: deploy
-  needs: ["{{ cookiecutter.project_slug }}-unit-test", "{{ cookiecutter.project_slug }}-integration-test"]
-  tags:
-    - DOCKER_modern
-  only:
-    refs:
-      - master
-    changes:
-      - "**/{{ cookiecutter.project_slug }}/**/*"
-  script:
-    - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
-    - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION
-    - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
-    - make pull-latest
-    - make tag-local
-    - docker tag $SC_CI_TEST_IMAGE_PREFIX/{{ cookiecutter.project_name.lower().replace(' ', '-') }} $SC_CI_MASTER_REGISTRY/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
-    - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY/simcore/services/comp
-    - make push
-  environment:
-    name: {{ cookiecutter.project_slug }}-master
-    url: $SC_CI_MASTER_REGISTRY
