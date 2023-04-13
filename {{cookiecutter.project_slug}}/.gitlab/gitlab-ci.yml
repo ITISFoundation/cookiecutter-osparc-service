@@ -6,7 +6,8 @@ variables:
   # have some prefix so it may help for garbage collecting in the registry
   SC_CI_PROJECT_PATH_NAME: ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
   SC_CI_TEST_IMAGE_PREFIX: $SC_CI_TESTING_REGISTRY/ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
-  SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION: services/{{ cookiecutter.project_slug }}
+  SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_").replace("-", "_") }}_LOCATION: services/{{ cookiecutter.project_slug }}
+  USER: root
 services:
    - docker:dind
 before_script:
@@ -23,11 +24,10 @@ before_script:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY
     - make pull-latest || true
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
-    - make devenv
     - make build
     - make push-force
   only:
@@ -53,35 +53,13 @@ remove_{{ cookiecutter.project_slug }}_builds:
     - export DOCKER_PROJECT=$SC_CI_PROJECT_PATH_NAME/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
     - export API_USER=$SC_CI_TESTING_REGISTRY_USER
     - export API_TOKEN=$SC_CI_TESTING_REGISTRY_PORTUS_TOKEN
-    - bash $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/.gitlab/delete-image-from-registry-portus.bash # this will fail if registry is not available through Portus
+    - bash $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/.gitlab/delete-image-from-registry-portus.bash # this will fail if registry is not available through Portus
   when: manual
   environment:
     name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
     action: stop
 
-{{ cookiecutter.project_slug }}-unit-test:
-  stage: test
-  needs: []
-  tags:
-    - DOCKER_modern
-  script:
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
-    - make devenv
-    - make tests-unit
-  only:
-    refs:
-      - branches
-      - merge_requests
-    changes:
-      - "**/{{ cookiecutter.project_slug }}/**/*"
-  artifacts:
-    reports:
-      junit:
-        - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_unittest.xml
-    paths:
-      - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_unittest.xml
-
-{{ cookiecutter.project_slug }}-integration-test:
+{{ cookiecutter.project_slug }}-test:
   stage: test
   tags:
     - DOCKER_modern
@@ -89,12 +67,11 @@ remove_{{ cookiecutter.project_slug }}_builds:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull-latest
     - make tag-local
-    - make devenv
-    - make tests-integration
+    - make tests
   only:
     refs:
       - branches
@@ -104,9 +81,9 @@ remove_{{ cookiecutter.project_slug }}_builds:
   artifacts:
     reports:
       junit:
-        - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
+        - $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/pytest_integrationtest.xml
     paths:
-      - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
+      - $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION/pytest_integrationtest.xml
 
 {{ cookiecutter.project_slug }}-master:
   stage: deploy
@@ -121,7 +98,7 @@ remove_{{ cookiecutter.project_slug }}_builds:
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter.project_package_name.upper().replace("-", "_") }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull-latest
     - make tag-local
