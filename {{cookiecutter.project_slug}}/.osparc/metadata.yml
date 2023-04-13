@@ -5,6 +5,7 @@ integration-version: 1.0.0
 version: {{ cookiecutter.version }}
 description: {{ cookiecutter.project_short_description }}
 contact: {{ cookiecutter.contact_email }}
+thumbnail: https://via.placeholder.com/170x120.png
 authors:
   - name: {{ cookiecutter.author_name }}
     email: {{ cookiecutter.author_email }}
