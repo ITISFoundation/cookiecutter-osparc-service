@@ -105,7 +105,7 @@ push push-force: ## pushes (resp. force) services to the registry if service not
 
 .PHONY: publish-local
 publish-local: ## push to local throw away registry to test integration
-	docker tag simcore/services/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 	docker push registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 	@curl registry:5000/v2/_catalog | jq
 	
