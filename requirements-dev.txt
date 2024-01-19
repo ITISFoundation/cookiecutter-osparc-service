@@ -1,19 +1,15 @@
-coverage
+
+bump2version # package management
 cookiecutter
 coverage
-
-# linter
-pylint
-rope
-autopep8
-
-# testing
-pytest
+coverage
+jinja2_time
+pylint # linter
+pytest # testing
 pytest-cookies
 pytest-cov
 pytest-instafail
 pytest-mock
 pytest-sugar
+rope # linter
 
-# package management
-bump2version
