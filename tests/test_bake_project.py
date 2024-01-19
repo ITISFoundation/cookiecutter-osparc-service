@@ -11,9 +11,9 @@ from pathlib import Path
 from pytest_cookies.plugin import Cookies, Result
 import pytest
 
-current_dir = Path(sys.argv[0] if __name__ == "__main__" else __file__).resolve().parent
-repo_basedir =current_dir.parent
-cookiecutter_json = repo_basedir / "cookiecutter.json"
+_CURRENT_DIR = Path(sys.argv[0] if __name__ == "__main__" else __file__).resolve().parent
+_REPO_BASEDIR =_CURRENT_DIR.parent
+cookiecutter_json = _REPO_BASEDIR / "cookiecutter.json"
 
 
 
