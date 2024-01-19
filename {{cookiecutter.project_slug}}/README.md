@@ -1,8 +1,9 @@
 # {{ cookiecutter.project_slug }}
 
 {{ cookiecutter.project_short_description }}
-{% if "python" in cookiecutter.docker_base %}
 
+## Usage
+{% if "python" in cookiecutter.docker_base %}
 ```console
 $ make help
 
@@ -12,8 +13,6 @@ $ make build service=demo
 $ make shell service=demo
 ```
 {% else %}
-## Usage
-
 ```console
 $ make help
 
@@ -21,6 +20,7 @@ $ make build
 $ make info-build
 $ make tests
 ```
+{% endif %}
 
 ## Workflow
 
