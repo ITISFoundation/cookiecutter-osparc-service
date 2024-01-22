@@ -25,14 +25,13 @@ import logging
 import os
 import stat
 import sys
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from copy import deepcopy
 from inspect import Parameter, Signature
 from pathlib import Path
 from textwrap import indent
-from typing import Any, Callable, Mapping, Optional
-from typing import get_args, get_origin
-
+from typing import Any, Optional, get_args, get_origin
 
 try:
     # .osparc/requirements.txt
@@ -191,7 +190,7 @@ class SchemaResolver:
         return schema
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+@validate_arguments(config={"arbitrary_types_allowed":True})
 def dump_dot_osparc_config(core_func: Callable, settings_metadata: dict[str, Any]):
     def _create_inputs(parameters: Mapping[str, Parameter]) -> dict[str, Any]:
         inputs = {}
@@ -287,10 +286,7 @@ def dump_dot_osparc_config(core_func: Callable, settings_metadata: dict[str, Any
         if not metadata_path.exists():
             # init
             metadata.update(
-                **{
-                    "name": service_name,
-                    "key": service_key,
-                }
+                name=service_name, key=service_key
             )
         else:
             # previous version takes precedence
@@ -298,10 +294,7 @@ def dump_dot_osparc_config(core_func: Callable, settings_metadata: dict[str, Any
             metadata.update(prev_metadata)
 
         metadata.update(
-            **{
-                "inputs": inputs,
-                "outputs": outputs,
-            }
+            inputs=inputs, outputs=outputs
         )
 
         with metadata_path.open("wt") as fh:
@@ -553,15 +546,15 @@ def load_settings(settings_path: Path) -> DotOsparcSettings:
 
 if __name__ == "__main__":
     try:
-        settings = load_settings(settings_path=DOT_OSPARC_DIR / "settings.json")
+        _settings = load_settings(settings_path=DOT_OSPARC_DIR / "settings.json")
 
         main = create_cli(
             expose=discover_published_functions(
-                settings.service_functions, dot_osparc_dir=DOT_OSPARC_DIR
+                _settings.service_functions, dot_osparc_dir=DOT_OSPARC_DIR
             ),
-            settings=settings,
+            settings=_settings,
         )
         main()
-    except Exception as error:  # pylint: disable=broad-except
-        run_logger.exception("Stopping application. %s", error)
+    except Exception:  # pylint: disable=broad-except
+        run_logger.exception("Stopping %s", THIS_FILEPATH.name)
         sys.exit(os.EX_SOFTWARE)
