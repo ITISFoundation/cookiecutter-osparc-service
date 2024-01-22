@@ -84,8 +84,9 @@ publish: guard-service
 
 {%- endif %}
 
-# INTEGRATION -----------------------------------------------------------------
+
 {% if "python" not in cookiecutter.docker_base %}
+# INTEGRATION -----------------------------------------------------------------
 
 export DOCKER_REGISTRY   ?= {{ cookiecutter.default_docker_registry }}
 export DOCKER_IMAGE_NAME ?= {{ cookiecutter.project_name.lower().replace(' ', '-') }}
@@ -108,8 +109,10 @@ docker-compose.yml: $(METADATA) ## generates docker-compose
 {%- endif %}
 
 
-# BUILD -----------------------------------------------------------------
+
 {% if "python" not in cookiecutter.docker_base %}
+# BUILD -----------------------------------------------------------------
+
 define _docker_compose_build
 export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
 	docker compose -f docker-compose.yml build $(if $(findstring -nc,$@),--no-cache,);

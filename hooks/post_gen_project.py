@@ -15,7 +15,7 @@ if sys.version_info < (3, 8):
         f"Unsupported python version, got {sys.version_info} and expected >=3.8"
     )
 
-
+# user options
 SELECTED_DOCKER_BASE = "{{ cookiecutter.docker_base }}"
 SELECTED_GIT_REPO = "{{ cookiecutter.git_repo }}"
 
@@ -23,18 +23,18 @@ SELECTED_GIT_REPO = "{{ cookiecutter.git_repo }}"
 OSPARC_METADATA_PATH = Path(".osparc") / "metadata.yml"
 
 
-def create_dockerfile():
+def _create_dockerfile():
     folder_name = Path("docker") / SELECTED_DOCKER_BASE.split(":")[0]
 
     # list folders
     # NOTE: it needs to be a list as we delete the folders
 
-    for folder in list(f for f in Path("docker").glob("*") if f.is_dir()):
+    for folder in (f for f in Path("docker").glob("*") if f.is_dir()):
         if folder != folder_name:
             shutil.rmtree(folder)
 
 
-def create_ignore_listings():
+def _create_ignore_listings():
     # .gitignore
     common_gitignore = Path("Common.gitignore")
     python_gitignore = Path("Python.gitignore")
@@ -65,7 +65,7 @@ def create_ignore_listings():
     common_dockerignore.unlink()
 
 
-def create_repo_folder():
+def _create_repo_folder():
     if SELECTED_GIT_REPO != "github":
         shutil.rmtree(".github")
     if SELECTED_GIT_REPO != "gitlab":
@@ -81,7 +81,7 @@ def context_print(
     print("DONE")
 
 
-def check_python():
+def _check_python():
     is_pyconfig = "python" in SELECTED_DOCKER_BASE
 
     for folder in ("src", ".osparc"):
@@ -105,16 +105,16 @@ def main():
     print("Starting post-gen-project hook:", flush=True)
     try:
         with context_print("Pruning docker/ folder to selection"):
-            create_dockerfile()
+            _create_dockerfile()
 
         with context_print("Updating .gitignore and .dockerignore configs"):
-            create_ignore_listings()
+            _create_ignore_listings()
 
         with context_print("Updating service binder"):
-            check_python()
+            _check_python()
 
         with context_print("Adding config for selected external repository"):
-            create_repo_folder()
+            _create_repo_folder()
 
     except Exception as exc:  # pylint: disable=broad-except
         print("ERROR", exc)
