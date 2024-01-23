@@ -1,0 +1,22 @@
+{
+  "service_functions": [
+    "{{cookiecutter.project_package_name}}.demo"
+  ],
+  "metadata": {
+    "name": "{{ cookiecutter.project_name }}",
+    "key": "simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+    "type": "{{ cookiecutter.project_type }}",
+    "thumbnail": "https://github.com/ITISFoundation/osparc-simcore-python-client/raw/4e8b18494f3191d55f6692a6a605818aeeb83f95/docs/_media/mwl.png",
+    "integration-version": "1.0.0",
+    "version": "{{ cookiecutter.version }}",
+    "description": "{{ cookiecutter.project_short_description }}",
+    "contact": "{{ cookiecutter.contact_email }}",
+    "authors": [
+      {
+        "name": "{{ cookiecutter.author_name }}",
+        "email": "{{ cookiecutter.author_email }}",
+        "affiliation": "{{ cookiecutter.author_affiliation }}"
+      }
+    ]
+  }
+}
