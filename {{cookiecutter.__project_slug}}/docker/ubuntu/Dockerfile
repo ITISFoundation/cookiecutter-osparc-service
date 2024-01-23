@@ -1,10 +1,9 @@
-# TODO: Please set your custom image here and adapt the Dockerfile/entrypoint.sh accordingly
-FROM ubuntu:latest as base 
+FROM {{ cookiecutter.docker_base }} as base
 #
 #  USAGE:
-#     cd services/{{ cookiecutter._project_slug }}
-#     docker build -f Dockerfile -t {{ cookiecutter._project_slug }}:prod --target production ../../
-#     docker run {{ cookiecutter._project_slug }}:prod
+#     cd services/{{ cookiecutter.__project_slug }}
+#     docker build -f Dockerfile -t {{ cookiecutter.__project_slug }}:prod --target production ../../
+#     docker run {{ cookiecutter.__project_slug }}:prod
 #
 
 LABEL maintainer={{ cookiecutter.git_username }}
@@ -46,11 +45,11 @@ WORKDIR /build
 # defines the output of the build
 RUN mkdir --parents /build/bin
 # copy src code
-COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter._project_package_name }} src/{{ cookiecutter._project_package_name }}
+COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter.__project_package_name }} src/{{ cookiecutter.__project_package_name }}
 # ------------------------------------------------------------------------------------
 #TODO:
 # uncomment and adapt if build steps are necessary
-# RUN cp -R src/{{ cookiecutter._project_package_name }}/* /build/bin
+# RUN cp -R src/{{ cookiecutter.__project_package_name }}/* /build/bin
 # ------------------------------------------------------------------------------------
 
 # --------------------------Production stage -------------------
@@ -58,7 +57,7 @@ COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter._project_packag
 # Runs as ${SC_USER_NAME} (non-root user)
 #
 #  + /home/${SC_USER_NAME}     $HOME = WORKDIR
-#    + {{ cookiecutter._project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
+#    + {{ cookiecutter.__project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
 #    + docker [${SC_USER_NAME}:${SC_USER_NAME}]
 #    + service.cli [${SC_USER_NAME}:${SC_USER_NAME}]
 #
@@ -103,7 +102,7 @@ ENV PATH="/home/${SC_USER_NAME}/service.cli:${PATH}"
 {%- endif %}
 
 # copy binaries from build
-COPY --from=build --chown=${SC_USER_NAME}:${SC_USER_NAME} /build/bin {{ cookiecutter._project_package_name }}
+COPY --from=build --chown=${SC_USER_NAME}:${SC_USER_NAME} /build/bin {{ cookiecutter.__project_package_name }}
 
 # ------------------------------------------------------------------------------------
 #TODO:

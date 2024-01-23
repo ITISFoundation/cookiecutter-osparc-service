@@ -534,7 +534,7 @@ def load_settings(settings_path: Path) -> DotOsparcSettings:
     if not settings.service_functions:
         value = input(
             f"Initializing {settings_path} ... \n"
-            "Name a function to expose (e.g. {{ cookiecutter._project_package_name }}.my_function): "
+            "Name a function to expose (e.g. {{ cookiecutter.__project_package_name }}.my_function): "
         )
         settings.service_functions = [value]
 

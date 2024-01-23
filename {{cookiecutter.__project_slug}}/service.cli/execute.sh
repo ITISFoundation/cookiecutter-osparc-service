@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 IFS=$(printf '\n\t')
 
-cd /home/scu/{{ cookiecutter._project_package_name }}
+cd /home/scu/{{ cookiecutter.__project_package_name }}
 
 echo "starting service as"
 echo   User    : "$(id "$(whoami)")"

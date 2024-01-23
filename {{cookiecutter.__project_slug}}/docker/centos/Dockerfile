@@ -1,9 +1,9 @@
 FROM {{ cookiecutter.docker_base }} as base
 #
 #  USAGE:
-#     cd services/{{ cookiecutter._project_slug }}
-#     docker build -f Dockerfile -t {{ cookiecutter._project_slug }}:prod --target production ../../
-#     docker run {{ cookiecutter._project_slug }}:prod
+#     cd services/{{ cookiecutter.__project_slug }}
+#     docker build -f Dockerfile -t {{ cookiecutter.__project_slug }}:prod --target production ../../
+#     docker run {{ cookiecutter.__project_slug }}:prod
 #
 
 LABEL maintainer={{ cookiecutter.git_username }}
@@ -11,11 +11,18 @@ LABEL maintainer={{ cookiecutter.git_username }}
 # simcore-user uid=8004(${SC_USER_NAME}) gid=8004(${SC_USER_NAME}) groups=8004(${SC_USER_NAME})
 ENV SC_USER_ID 8004
 ENV SC_USER_NAME scu
-RUN adduser -D -u ${SC_USER_ID} -s /bin/sh -h /home/${SC_USER_NAME} ${SC_USER_NAME}
+ENV SC_GROUP_ID ${SC_USER_ID}
+ENV SC_GROUP_NAME ${SC_USER_NAME}
 
-RUN apk add --no-cache \
-    su-exec \
-    jq
+
+RUN groupadd --gid ${SC_GROUP_ID} ${SC_GROUP_NAME}
+RUN useradd -d /home/${SC_USER_NAME} --uid ${SC_USER_ID} --gid ${SC_GROUP_ID} --shell /bin/sh ${SC_USER_NAME}
+
+RUN yum -y install epel-release && \
+    yum -y install \
+    jq && \
+    yum clean all && \
+    rm -rf /var/cache/yum
 
 # -------------------------- Build stage -------------------
 # Installs build/package management tools and third party dependencies
@@ -30,21 +37,24 @@ ENV SC_BUILD_TARGET build
 # ------------------------------------------------------------------------------------
 #TODO:
 # uncomment and adapt if build dependencies shall be installed
-#RUN apk add --no-cache gcc git
+#RUN yum -y install \
+#    gcc \
+#    gcc-c++ \
+#    git \
+#    yum clean all && \
+#    rm -rf /var/cache/yum
 
-# uncomment and adapt if python necessary
-#RUN $SC_PIP install --upgrade pip wheel setuptools
 # ------------------------------------------------------------------------------------
 
 WORKDIR /build
 # defines the output of the build
-RUN mkdir -p /build/bin
+RUN mkdir --parents /build/bin
 # copy src code
-COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter._project_package_name }} src/{{ cookiecutter._project_package_name }}
+COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter.__project_package_name }} src/{{ cookiecutter.__project_package_name }}
 # ------------------------------------------------------------------------------------
 #TODO:
 # uncomment and adapt if build steps are necessary
-# RUN cp -R src/{{ cookiecutter._project_package_name }}/* /build/bin
+# RUN cp -R src/{{ cookiecutter.__project_package_name }}/* /build/bin
 # ------------------------------------------------------------------------------------
 
 # --------------------------Production stage -------------------
@@ -52,7 +62,7 @@ COPY --chown=${SC_USER_NAME}:${SC_USER_NAME} src/{{ cookiecutter._project_packag
 # Runs as ${SC_USER_NAME} (non-root user)
 #
 #  + /home/${SC_USER_NAME}     $HOME = WORKDIR
-#    + {{ cookiecutter._project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
+#    + {{ cookiecutter.__project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
 #    + docker [${SC_USER_NAME}:${SC_USER_NAME}]
 #    + service.cli [${SC_USER_NAME}:${SC_USER_NAME}]
 #
@@ -81,7 +91,9 @@ WORKDIR /home/${SC_USER_NAME}
 # ------------------------------------------------------------------------------------
 #TODO:
 # uncomment and adapt to install runtime dependencies
-#RUN apk add --no-cache ffmpeg
+#RUN yum -y install \
+#    yum clean all && \
+#    rm -rf /var/cache/yum
 # ------------------------------------------------------------------------------------
 
 # copy docker bootup scripts
@@ -95,7 +107,7 @@ ENV PATH="/home/${SC_USER_NAME}/service.cli:${PATH}"
 {%- endif %}
 
 # copy binaries from build
-COPY --from=build --chown=${SC_USER_NAME}:${SC_USER_NAME} /build/bin {{ cookiecutter._project_package_name }}
+COPY --from=build --chown=${SC_USER_NAME}:${SC_USER_NAME} /build/bin {{ cookiecutter.__project_package_name }}
 
 # ------------------------------------------------------------------------------------
 #TODO:

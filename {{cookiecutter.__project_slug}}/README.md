@@ -1,4 +1,4 @@
-# {{ cookiecutter._project_slug }}
+# {{ cookiecutter.__project_slug }}
 
 {{ cookiecutter.project_short_description }}
 
@@ -24,11 +24,11 @@ $ make tests
 
 ## Workflow
 
-1. The source code shall be copied to the [src]({{ cookiecutter._project_slug }}/src/{{ cookiecutter._project_package_name }}) folder.
-2. The [Dockerfile]({{ cookiecutter._project_slug }}/src/Dockerfile) shall be modified to compile the source code.
+1. The source code shall be copied to the [src]({{ cookiecutter.__project_slug }}/src/{{ cookiecutter.__project_package_name }}) folder.
+2. The [Dockerfile]({{ cookiecutter.__project_slug }}/src/Dockerfile) shall be modified to compile the source code.
 3. The [.osparc](.osparc) is the configuration folder and source of truth for metadata: describes service info and expected inputs/outputs of the service.
-4. The [execute]({{ cookiecutter._project_slug }}/service.cli/execute) shell script shall be modified to run the service using the expected inputs and retrieve the expected outputs.
-5. The test input/output shall be copied to [validation]({{ cookiecutter._project_slug }}/validation).
+4. The [execute]({{ cookiecutter.__project_slug }}/service.cli/execute) shell script shall be modified to run the service using the expected inputs and retrieve the expected outputs.
+5. The test input/output shall be copied to [validation]({{ cookiecutter.__project_slug }}/validation).
 6. The service docker image may be built and tested as ``make build tests`` (see usage above)
 7. Optional: if your code requires specific CPU/RAM resources, edit [runtime.yml](.osparc/runtime.yml). In doubt, leave it as default.
 

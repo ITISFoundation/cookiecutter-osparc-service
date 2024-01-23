@@ -1,9 +1,9 @@
 FROM {{ cookiecutter.docker_base }} as base
 #
 #  USAGE:
-#     cd services/{{ cookiecutter._project_slug }}
-#     docker build -f Dockerfile -t {{ cookiecutter._project_slug }}:prod --target production ../../
-#     docker run {{ cookiecutter._project_slug }}:prod
+#     cd services/{{ cookiecutter.__project_slug }}
+#     docker build -f Dockerfile -t {{ cookiecutter.__project_slug }}:prod --target production ../../
+#     docker run {{ cookiecutter.__project_slug }}:prod
 #
 
 LABEL maintainer={{ cookiecutter.git_username }}
@@ -35,7 +35,7 @@ RUN python -m pip --no-cache install --upgrade pip wheel setuptools
 #  + /home/${SC_USER_NAME}     $HOME = WORKDIR
 #    + .osparc [${SC_USER_NAME}:${SC_USER_NAME}]
 #    + docker  [${SC_USER_NAME}:${SC_USER_NAME}]
-#    + {{ cookiecutter._project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
+#    + {{ cookiecutter.__project_package_name }} [${SC_USER_NAME}:${SC_USER_NAME}]
 #
 FROM base as production
 

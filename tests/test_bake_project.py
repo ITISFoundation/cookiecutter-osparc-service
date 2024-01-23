@@ -18,7 +18,7 @@ cookiecutter_json = _REPO_BASEDIR / "cookiecutter.json"
 
 
 def test_minimal_config_to_bake(cookies: Cookies):
-    result = cookies.bake(extra_context={"_project_slug": "test_project"})
+    result = cookies.bake(extra_context={"__project_slug": "test_project"})
     assert result.exit_code == 0
     assert result.exception is None
     assert result.project.basename == "test_project"
@@ -32,7 +32,7 @@ def test_minimal_config_to_bake(cookies: Cookies):
 def baked_project(cookies: Cookies, request) -> Result:
     result = cookies.bake(
         extra_context={
-            "_project_slug": "DummyProject",
+            "__project_slug": "DummyProject",
             "project_name": "dummy-project",
             "default_docker_registry": "test.test.com",
             "docker_base": request.param,

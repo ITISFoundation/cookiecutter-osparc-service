@@ -1,6 +1,6 @@
 {
   "service_functions": [
-    "{{cookiecutter._project_package_name}}.demo"
+    "{{cookiecutter.__project_package_name}}.demo"
   ],
   "metadata": {
     "name": "{{ cookiecutter.project_name }}",
