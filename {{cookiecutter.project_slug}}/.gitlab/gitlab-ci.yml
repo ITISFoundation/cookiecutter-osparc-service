@@ -6,7 +6,7 @@ variables:
   # have some prefix so it may help for garbage collecting in the registry
   SC_CI_PROJECT_PATH_NAME: ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
   SC_CI_TEST_IMAGE_PREFIX: $SC_CI_TESTING_REGISTRY/ci/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG
-  SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION: services/{{ cookiecutter.project_slug }}
+  SC_CI_{{ cookiecutter._project_package_name.upper() }}_LOCATION: services/{{ cookiecutter._project_slug }}
   USER: root
 services:
    - docker:dind
@@ -14,17 +14,17 @@ before_script:
   - docker info
 
 # --------------------------------------------------------------------------------------------
-# ------- {{ cookiecutter.project_slug }}
+# ------- {{ cookiecutter._project_slug }}
 # --------------------------------------------------------------------------------------------
 
-{{ cookiecutter.project_slug }}-build:
+{{ cookiecutter._project_slug }}-build:
   stage: build
   tags:
     - DOCKER_modern
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter._project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_MASTER_REGISTRY
     - make pull-latest || true
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
@@ -35,19 +35,19 @@ before_script:
       - branches
       - merge_requests
     changes:
-      - "**/{{ cookiecutter.project_slug }}/**/*"
+      - "**/{{ cookiecutter._project_slug }}/**/*"
   environment:
-    name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter.project_slug }}
+    name: $CI_PROJECT_PATH_SLUG/$CI_COMMIT_REF_SLUG/{{ cookiecutter._project_slug }}
 
-{{ cookiecutter.project_slug }}-test:
+{{ cookiecutter._project_slug }}-test:
   stage: test
   tags:
     - DOCKER_modern
-  needs: ["{{ cookiecutter.project_slug }}-build"]
+  needs: ["{{ cookiecutter._project_slug }}-build"]
   script:
     - echo "$SC_CI_TESTING_REGISTRY_PASSWORD" | docker login -u "$SC_CI_TESTING_REGISTRY_USER" --password-stdin $SC_CI_TESTING_REGISTRY
     - echo "$SC_CI_MASTER_REGISTRY_PASSWORD" | docker login -u "$SC_CI_MASTER_REGISTRY_USER" --password-stdin $SC_CI_MASTER_REGISTRY
-    - cd $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION
+    - cd $SC_CI_{{ cookiecutter._project_package_name.upper() }}_LOCATION
     - export DOCKER_REGISTRY=$SC_CI_TEST_IMAGE_PREFIX
     - make pull-latest
     - make tag-local
@@ -57,10 +57,10 @@ before_script:
       - branches
       - merge_requests
     changes:
-      - "**/{{ cookiecutter.project_slug }}/**/*"
+      - "**/{{ cookiecutter._project_slug }}/**/*"
   artifacts:
     reports:
       junit:
-        - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
+        - $SC_CI_{{ cookiecutter._project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
     paths:
-      - $SC_CI_{{ cookiecutter.project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml
+      - $SC_CI_{{ cookiecutter._project_package_name.upper() }}_LOCATION/pytest_integrationtest.xml

@@ -1,4 +1,4 @@
-name: Github-CI Push/PR {{ cookiecutter.project_slug }}
+name: Github-CI Push/PR {{ cookiecutter._project_slug }}
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name: building {{ cookiecutter.project_slug }}
+    name: building {{ cookiecutter._project_slug }}
     runs-on: {{ "${{ matrix.os }}" }}
     strategy:
       matrix:

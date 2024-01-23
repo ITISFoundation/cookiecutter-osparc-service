@@ -13,7 +13,7 @@ export COMPOSE_INPUT_DIR  := ./validation/input
 export COMPOSE_OUTPUT_DIR := .tmp/output
 
 OSPARC_DIR:=$(CURDIR)/.osparc
-APP_NAME := {{ cookiecutter.project_slug }}
+APP_NAME := {{ cookiecutter._project_slug }}
 
 # Check that given variables are set and all have non-empty values,
 # die with an error otherwise.
@@ -72,11 +72,11 @@ build: docker-compose.yml guard-service ## builds service image
 shell: guard-service  ## starts container's shell
 	docker-compose run \
 		--entrypoint bash \
-		{{ cookiecutter.project_package_name }}-$(service)
+		{{ cookiecutter._project_package_name }}-$(service)
 
 
 -include .env
-IMAGE=$(shell yq '.services.{{ cookiecutter.project_package_name }}-$(service).image' docker-compose.yml)
+IMAGE=$(shell yq '.services.{{ cookiecutter._project_package_name }}-$(service).image' docker-compose.yml)
 
 publish: guard-service
 	docker tag $(IMAGE) $(REGISTRY_URL)/$(IMAGE)
