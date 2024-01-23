@@ -1,6 +1,6 @@
 # cookiecutter-osparc-service
 
-Status: ![Build Status](https://github.com/ITISFoundation/cookiecutter-osparc-service/workflows/Github-CI%20Push/PR/badge.svg)
+![Build Status](https://github.com/ITISFoundation/cookiecutter-osparc-service/workflows/Github-CI%20Push/PR/badge.svg)
 
 Cookiecutter to generate an oSparc compatible service for the oSparc simcore platform. Currently only for **computational services** supported.
 
@@ -21,14 +21,19 @@ pip install cookiecutter
 
 ## Usage
 
-Generate a new Cookiecutter template layout:
+Prepare a python environment (optional)
+
 ```console
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+and generate a new Cookiecutter template layout
+```console
 cookiecutter gh:ITISFoundation/cookiecutter-osparc-service
 ```
 
-Check [FAQ](./FAQ.md)
+For more information, check [FAQ](./FAQ.md)
 
 
 ## Development
@@ -48,7 +53,6 @@ This project is licensed under the terms of the [MIT License](/LICENSE)
 
 
 ---
-
 <p align="center">
-<img src="https://forthebadge.com/images/badges/built-with-love.svg" width="150">
+<image src="https://github.com/ITISFoundation/osparc-simcore-python-client/blob/4e8b18494f3191d55f6692a6a605818aeeb83f95/docs/_media/mwl.png" alt="Made with love at www.z43.swiss" width="20%" />
 </p>

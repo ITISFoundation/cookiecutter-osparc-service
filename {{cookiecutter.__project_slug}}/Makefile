@@ -1,0 +1,247 @@
+#
+# Author: {{ cookiecutter.author_name }}
+
+SHELL = /bin/sh
+.DEFAULT_GOAL := help
+
+export VCS_URL    := $(shell git config --get remote.origin.url 2> /dev/null || echo unversioned repo)
+export VCS_REF    := $(shell git rev-parse --short HEAD 2> /dev/null || echo unversioned repo)
+export VCS_STATUS := $(if $(shell git status -s 2> /dev/null || echo unversioned repo),'modified/untracked','clean')
+export BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+export COMPOSE_INPUT_DIR  := ./validation/input
+export COMPOSE_OUTPUT_DIR := .tmp/output
+
+OSPARC_DIR:=$(CURDIR)/.osparc
+APP_NAME := {{ cookiecutter.__project_slug }}
+
+# Check that given variables are set and all have non-empty values,
+# die with an error otherwise.
+#
+# Params:
+#   1. Variable name(s) to test.
+#   2. (optional) Error message to print.
+guard-%:
+	@ if [ "${${*}}" = "" ]; then \
+		echo "Missing input variable \"$*\""; \
+		exit 1; \
+	fi
+
+{% if "python" in cookiecutter.docker_base %}
+## ENVIRONMENT -------------------------------
+
+.PHONY: devenv
+
+.venv:
+	@python3 --version
+	python3 -m venv $@
+	## upgrading tools to latest version in $(shell python3 --version)
+	$@/bin/pip3 --quiet install --upgrade \
+		pip \
+		wheel \
+		setuptools
+	@$@/bin/pip3 list --verbose
+
+devenv: .venv ## creates a virtual environment and install development tools
+	# Installing .osparc requirements
+	$</bin/pip3 install --quiet -r $(OSPARC_DIR)/requirements.txt
+	# Installing cookiecutter for replay
+	$</bin/pip3 install --quiet cookiecutter
+	@echo "To activate the venv, please execute 'source .venv/bin/activate'"
+
+.PHONY: config
+config: .venv guard-service ## config a service for a specific function 'make config service=mypackage.myfunc'
+	$</bin/python $(OSPARC_DIR)/bin/python_binder_program.py $(service) config
+
+.PHONY: clean-config
+config-clean: guard-service ## cleans services config
+	-rm -rf $(OSPARC_DIR)/services $(service)
+	-rm $(OSPARC_DIR)/$(service)
+
+.PHONY: docker-compose.yml
+docker-compose.yml: guard-service
+	$(OSPARC_DIR)/bin/ooil compose \
+		--metadata .osparc/services/$(service)/metadata.yml \
+		--to-spec-file=$@
+
+.PHONY: build
+build: docker-compose.yml guard-service ## builds service image
+	docker-compose build
+
+.PHONY: shell
+shell: guard-service  ## starts container's shell
+	docker-compose run \
+		--entrypoint bash \
+		{{ cookiecutter.__project_package_name }}-$(service)
+
+
+-include .env
+IMAGE=$(shell yq '.services.{{ cookiecutter.__project_package_name }}-$(service).image' docker-compose.yml)
+
+publish: guard-service
+	docker tag $(IMAGE) $(REGISTRY_URL)/$(IMAGE)
+	docker push $(REGISTRY_URL)/$(IMAGE)
+
+{%- endif %}
+
+
+{% if "python" not in cookiecutter.docker_base %}
+# INTEGRATION -----------------------------------------------------------------
+
+export DOCKER_REGISTRY   ?= {{ cookiecutter.default_docker_registry }}
+export DOCKER_IMAGE_NAME ?= {{ cookiecutter.project_name.lower().replace(' ', '-') }}
+export DOCKER_IMAGE_TAG  ?= $(shell cat VERSION 2> /dev/null || echo undefined)
+
+METADATA := .osparc/metadata.yml
+
+.PHONY: VERSION
+VERSION: $(METADATA) ## generates VERSION from metadata
+	# updating $@ from $<
+	@$(OSPARC_DIR)/bin/ooil get-version --metadata-file $< > $@
+
+service.cli/run: $(METADATA) ## generates run from metadata
+	# Updates adapter script from metadata in $<
+	@$(OSPARC_DIR)/bin/ooil run-creator --metadata $< --runscript $@
+
+docker-compose.yml: $(METADATA) ## generates docker-compose
+	# Injects metadata from $< as labels
+	@$(OSPARC_DIR)/bin/ooil compose --to-spec-file $@ --metadata $<
+{%- endif %}
+
+
+
+{% if "python" not in cookiecutter.docker_base %}
+# BUILD -----------------------------------------------------------------
+
+define _docker_compose_build
+export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
+	docker compose -f docker-compose.yml build $(if $(findstring -nc,$@),--no-cache,);
+endef
+
+.PHONY: build build-devel build-nc build-devel-nc
+build build-devel build-nc build-devel-nc: VERSION docker-compose.yml service.cli/run ## builds image
+	# building image local/${DOCKER_IMAGE_NAME}...
+	@$(call _docker_compose_build)
+
+
+define show-meta
+	$(foreach iid,$(shell docker images */$(1):* -q | sort | uniq),\
+		docker image inspect $(iid) | jq '.[0] | .RepoTags, .ContainerConfig.Labels, .Config.Labels';)
+endef
+
+.PHONY: info-build
+info-build: ## displays info on the built image
+	# Built images
+	@docker images */$(DOCKER_IMAGE_NAME):*
+	# Tags and labels
+	@$(call show-meta,$(DOCKER_IMAGE_NAME))
+{%- endif %}
+
+# TESTS-----------------------------------------------------------------
+.PHONY: test tests
+test tests:  ## runs validation tests
+	@$(OSPARC_DIR)/bin/ooil test .
+
+
+# PUBLISHING -----------------------------------------------------------------
+{% if "python" not in cookiecutter.docker_base %}
+.PHONY: version-service-patch version-service-minor version-service-major
+version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
+	$(OSPARC_DIR)/bin/ooil bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
+	# syncing metadata upstream
+	@$(MAKE) VERSION
+
+
+.PHONY: tag-local
+tag-local:
+	docker tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:$(if $(findstring version,$@),$(DOCKER_IMAGE_NAME),latest) local/$(DOCKER_IMAGE_NAME):production
+
+.PHONY: push push-force push-version push-latest pull-latest pull-version tag-latest tag-version
+tag-latest tag-version:
+	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
+
+version_valid  = $(shell test $$(echo $(DOCKER_IMAGE_TAG) | cut --fields=1 --delimiter=.) -gt 0 > /dev/null && echo "image version is valid")
+version_exists = $(shell DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) > /dev/null && echo "image already exists on $(DOCKER_REGISTRY)")
+push push-force: ## pushes (resp. force) services to the registry if service not available in registry.
+	@$(if $(findstring force,$@),,\
+		$(if $(call version_valid),$(info version is valid), $(error $(DOCKER_IMAGE_TAG) is not a valid version (major>=1)))\
+		$(if $(call version_exists),$(error $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) already exists on $(DOCKER_REGISTRY)), $(info no version found on $(DOCKER_REGISTRY)))\
+	)
+	@$(MAKE) push-version;
+	@$(MAKE) push-latest;
+
+.PHONY: publish-local
+publish-local: ## push to local throw away registry to test integration
+	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+	docker push registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+	@curl registry:5000/v2/_catalog | jq
+	
+push-latest push-version: ## publish service to registry with latest/version tag
+	# pushing '$(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)'...
+	@$(MAKE) tag-$(subst push-,,$@)
+	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
+	# pushed '$(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)'
+
+pull-latest pull-version: ## pull service from registry
+	@docker pull $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
+{%- endif %}
+
+# COOCKIECUTTER -----------------------------------------------------------------
+
+.PHONY: replay
+replay: .cookiecutterrc ## re-applies cookiecutter
+	## NOTE for developers: if you are using a branch, add '-c branch-name' to this script
+	# Replaying {{ cookiecutter._template }} ...
+	@cookiecutter --no-input --overwrite-if-exists \
+		--config-file=$< \
+		--output-dir="$(abspath $(CURDIR)/..)" \
+		"{{ cookiecutter._template }}"
+
+
+
+.PHONY: info
+info: ## general info
+	# env vars: version control
+	@echo " VCS_URL                     : $(VCS_URL)"
+	@echo " VCS_REF                     : $(VCS_REF)"
+	@echo " VCS_STATUS                  : $(VCS_STATUS)"
+	# env vars: docker
+	@echo " DOCKER_REGISTRY             : $(DOCKER_REGISTRY)"
+	@echo " DOCKER_IMAGE_NAME           : $(DOCKER_IMAGE_NAME)"
+	@echo " DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
+	@echo " COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
+	@echo " COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
+	@echo " BUILD_DATE                  : $(BUILD_DATE)"
+	# exe: recommended dev tools
+	@echo ' git                         : $(shell git --version 2>/dev/null || echo not found)'
+	@echo ' make                        : $(shell make --version 2>&1 | head -n 1)'
+	@echo ' jq                          : $(shell jq --version 2>/dev/null || echo not found z)'
+	@echo ' awk                         : $(shell awk -W version 2>&1 | head -n 1 2>/dev/null || echo not found)'
+	@echo ' python                      : $(shell python3 --version 2>/dev/null || echo not found )'
+	@echo ' docker                      : $(shell docker --version)'
+	@echo ' docker buildx               : $(shell docker buildx version)'
+	@echo ' docker-compose              : $(shell docker-compose --version)'
+	# exe: integration tools
+	@echo ' ooil version                : $(shell $(OSPARC_DIR)/bin/ooil --version)'
+
+
+
+# MISC -----------------------------------------------------------------
+
+.PHONY: help
+help: ## this colorful help
+	@echo "Recipes for '$(notdir $(CURDIR))':"
+	@echo ""
+	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
+
+
+.PHONY: clean
+git_clean_args = -dxf --exclude=.vscode/
+
+clean: ## cleans all unversioned files in project and temp files create by this makefile
+	# Cleaning unversioned
+	@git clean -n $(git_clean_args)
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo -n "$(shell whoami), are you REALLY sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@git clean $(git_clean_args)

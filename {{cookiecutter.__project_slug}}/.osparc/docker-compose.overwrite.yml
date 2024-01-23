@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  {{ cookiecutter.__project_slug }}:
+    build:
+      dockerfile: docker/{{ cookiecutter.docker_base.split(":")[0] }}/Dockerfile
+      target: production

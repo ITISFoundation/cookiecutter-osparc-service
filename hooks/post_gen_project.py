@@ -10,22 +10,31 @@ import os
 from contextlib import contextmanager
 
 
+if sys.version_info < (3, 8):
+    raise ValueError(
+        f"Unsupported python version, got {sys.version_info} and expected >=3.8"
+    )
+
+# user options
 SELECTED_DOCKER_BASE = "{{ cookiecutter.docker_base }}"
 SELECTED_GIT_REPO = "{{ cookiecutter.git_repo }}"
 
 
-def create_dockerfile():
+OSPARC_METADATA_PATH = Path(".osparc") / "metadata.yml"
+
+
+def _create_dockerfile():
     folder_name = Path("docker") / SELECTED_DOCKER_BASE.split(":")[0]
 
     # list folders
     # NOTE: it needs to be a list as we delete the folders
 
-    for folder in list(f for f in Path("docker").glob("*") if f.is_dir()):
+    for folder in (f for f in Path("docker").glob("*") if f.is_dir()):
         if folder != folder_name:
             shutil.rmtree(folder)
 
 
-def create_ignore_listings():
+def _create_ignore_listings():
     # .gitignore
     common_gitignore = Path("Common.gitignore")
     python_gitignore = Path("Python.gitignore")
@@ -56,7 +65,7 @@ def create_ignore_listings():
     common_dockerignore.unlink()
 
 
-def create_repo_folder():
+def _create_repo_folder():
     if SELECTED_GIT_REPO != "github":
         shutil.rmtree(".github")
     if SELECTED_GIT_REPO != "gitlab":
@@ -72,17 +81,40 @@ def context_print(
     print("DONE")
 
 
+def _check_python():
+    is_pyconfig = "python" in SELECTED_DOCKER_BASE
+
+    for folder in ("src", ".osparc"):
+        for fp in Path(folder).rglob("Python.*"):
+            if fp.is_file():
+                if is_pyconfig:
+                    fp.rename(fp.parent / fp.name.removeprefix("Python."))
+                else:
+                    fp.unlink(missing_ok=True)
+
+    if is_pyconfig:
+        shutil.rmtree("service.cli", ignore_errors=True)
+        Path(".osparc/docker-compose.overwrite.yml").unlink(missing_ok=True)
+
+        # settings.json contains metadata
+        if (Path(".osparc") / "settings.json").exists():
+            OSPARC_METADATA_PATH.unlink(missing_ok=True)
+
+
 def main():
     print("Starting post-gen-project hook:", flush=True)
     try:
         with context_print("Pruning docker/ folder to selection"):
-            create_dockerfile()
+            _create_dockerfile()
 
         with context_print("Updating .gitignore and .dockerignore configs"):
-            create_ignore_listings()
+            _create_ignore_listings()
+
+        with context_print("Updating service binder"):
+            _check_python()
 
         with context_print("Adding config for selected external repository"):
-            create_repo_folder()
+            _create_repo_folder()
 
     except Exception as exc:  # pylint: disable=broad-except
         print("ERROR", exc)

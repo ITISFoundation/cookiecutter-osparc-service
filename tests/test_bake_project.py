@@ -11,14 +11,14 @@ from pathlib import Path
 from pytest_cookies.plugin import Cookies, Result
 import pytest
 
-current_dir = Path(sys.argv[0] if __name__ == "__main__" else __file__).resolve().parent
-repo_basedir =current_dir.parent
-cookiecutter_json = repo_basedir / "cookiecutter.json"
+_CURRENT_DIR = Path(sys.argv[0] if __name__ == "__main__" else __file__).resolve().parent
+_REPO_BASEDIR =_CURRENT_DIR.parent
+cookiecutter_json = _REPO_BASEDIR / "cookiecutter.json"
 
 
 
 def test_minimal_config_to_bake(cookies: Cookies):
-    result = cookies.bake(extra_context={"project_slug": "test_project"})
+    result = cookies.bake(extra_context={"__project_slug": "test_project"})
     assert result.exit_code == 0
     assert result.exception is None
     assert result.project.basename == "test_project"
@@ -32,7 +32,7 @@ def test_minimal_config_to_bake(cookies: Cookies):
 def baked_project(cookies: Cookies, request) -> Result:
     result = cookies.bake(
         extra_context={
-            "project_slug": "DummyProject",
+            "__project_slug": "DummyProject",
             "project_name": "dummy-project",
             "default_docker_registry": "test.test.com",
             "docker_base": request.param,
