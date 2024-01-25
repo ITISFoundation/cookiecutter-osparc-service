@@ -31,7 +31,8 @@ cookiecutter gh:ITISFoundation/cookiecutter-osparc-service
 Check [FAQ](./FAQ.md)
 
 ## Tutorials and guides
-A video tutorial is available [here](https://youtu.be/yoKXHMQcs1Y?si=lmJgDM-Y52jvwS3d).
+A video tutorial is available:
+<iframe width="560" height="315" src="https://www.youtube.com/embed/yoKXHMQcs1Y?si=prc4N6bP01I0unax" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## Development
 
