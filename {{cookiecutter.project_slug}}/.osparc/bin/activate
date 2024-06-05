@@ -40,9 +40,8 @@ deactivate () {
     if [ ! "${1-}" = "nondestructive" ] ; then
     # Self destruct!
         unset -f deactivate
+        echo "osparc environment deactivated"
     fi
-
-    echo "osparc environment deactivated"
 }
 
 # unset irrelevant variables
