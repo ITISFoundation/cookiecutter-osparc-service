@@ -3,6 +3,7 @@ key: simcore/services/{%- if cookiecutter.project_type == "computational" -%}com
 type: {{ cookiecutter.project_type }}
 integration-version: 1.0.0
 version: {{ cookiecutter.version }}
+version_display: {{ cookiecutter.version }}
 description: {{ cookiecutter.project_short_description }}
 contact: {{ cookiecutter.contact_email }}
 thumbnail: https://github.com/ITISFoundation/osparc-assets/blob/cb43207b6be2f4311c93cd963538d5718b41a023/assets/default-thumbnail-cookiecutter-osparc-service.png?raw=true

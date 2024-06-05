@@ -33,7 +33,7 @@
   "git_username": "Yourusername",
   "default_docker_registry": "itisfoundation",
   "release_date": "{% now 'utc', '%Y' %}",
-  "version": "0.1.0",
+  "version": "0.1.0",  
   "_extensions": [
     "jinja2_time.TimeExtension"
   ]
