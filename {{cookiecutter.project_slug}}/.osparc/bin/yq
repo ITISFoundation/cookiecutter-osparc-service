@@ -1,4 +1,8 @@
 #!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+IFS=$'\n\t'
 
 # Define variables
 YQ_IMAGE="mikefarah/yq"

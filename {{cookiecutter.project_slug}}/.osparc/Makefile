@@ -36,7 +36,7 @@ update-version:
 compose: update-version ## creates docker-compose.yml
 	# creating compose specs
 	cd $(REPO_DIR) \
-	&& .osparc/bin/ooil.bash compose -f .osparc/docker-compose.yml
+	&& .osparc/bin/ooil compose -f .osparc/docker-compose.yml
 
 
 .PHONY: build build-nc

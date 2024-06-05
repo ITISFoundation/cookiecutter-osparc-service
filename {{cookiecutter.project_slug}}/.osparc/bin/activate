@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Store the current PATH
+export OLD_PATH=$PATH
+
+
+# Get the directory of the currently running script
+BIN_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+# Add .osparc/bin to the PATH
+export PATH="$BIN_DIR/.osparc/bin:$PATH"
+
+# Define the deactivate function
+deactivate() {
+    # Restore the old PATH
+    export PATH=$OLD_PATH
+    # Unset the OLD_PATH variable
+    unset OLD_PATH
+    # Unset the deactivate function itself
+    unset -f deactivate
+    echo "osparc environment deactivated"
+}
+
+# Inform the user
+echo "Environment activated. To deactivate, run: deactivate"
