@@ -12,7 +12,7 @@ WORKDIR="$(pwd)"
 #
 # NOTE: with --interactive --tty the command below will
 #    produce colors in the outputs. The problem is that
-# .   ooil.bash >VERSION will insert special color codes
+# .   ooil >VERSION will insert special color codes
 # .   in the VERSION file which make it unusable as a variable
 # .   when cat VERSION !!
 #
@@ -34,7 +34,7 @@ run() {
 # MAIN
 #
 # USAGE
-#    ./scripts/ooil.bash --help
+#    ooil --help
 
 run "$@"
 # ----------------------------------------------------------------------
