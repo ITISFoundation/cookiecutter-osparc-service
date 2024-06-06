@@ -34,6 +34,7 @@
   "default_docker_registry": "itisfoundation",
   "release_date": "{% now 'utc', '%Y' %}",
   "version": "0.1.0",  
+  "version_display": "{{ cookiecutter.version }}",  
   "_extensions": [
     "jinja2_time.TimeExtension"
   ]
