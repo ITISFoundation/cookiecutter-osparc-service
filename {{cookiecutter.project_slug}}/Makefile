@@ -48,9 +48,9 @@ run-local:	## runs image with local configuration
 	docker compose --file docker-compose-local.yml up
 
 .PHONY: publish-local
-publish-local: ## push to local oSPARC to test integration. It requires the oSPARC platform running on your computer, you can find more information here: https://github.com/ITISFoundation/osparc-simcore/blob/master/README.md
-	docker tag simcore/services/dynamic/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/dynamic/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
-	docker push registry:5000/simcore/services/dynamic/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+publish-local: ## push to local throw away registry to test integration
+	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+	docker push registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 	@curl registry:5000/v2/_catalog | jq
 
 .PHONY: help
