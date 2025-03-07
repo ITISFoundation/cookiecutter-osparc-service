@@ -1,11 +1,10 @@
 name: {{ cookiecutter.project_name }}
 key: simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}
 type: {{ cookiecutter.project_type }}
-integration-version: 1.0.0
+integration-version: 2.0.0
 version: {{ cookiecutter.version }}
-version_display: {{ cookiecutter.version_display }}
 description: {{ cookiecutter.project_short_description }}
-contact: {{ cookiecutter.contact_email }}
+contact: {{ cookiecutter.author_email }}
 thumbnail: https://github.com/ITISFoundation/osparc-assets/blob/cb43207b6be2f4311c93cd963538d5718b41a023/assets/default-thumbnail-cookiecutter-osparc-service.png?raw=true
 authors:
   - name: {{ cookiecutter.author_name }}
