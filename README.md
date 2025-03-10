@@ -30,6 +30,10 @@ cookiecutter gh:ITISFoundation/cookiecutter-osparc-service
 
 Check [FAQ](./FAQ.md)
 
+## Tutorials and guides
+A video tutorial is available:
+
+[![webinar_preview](https://img.youtube.com/vi/yoKXHMQcs1Y/0.jpg)](https://www.youtube.com/watch?v=yoKXHMQcs1Y)
 
 ## Development
 

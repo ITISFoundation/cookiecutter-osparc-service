@@ -17,3 +17,6 @@ pytest-sugar
 
 # package management
 bump2version
+
+# used in cookiecutter.json
+jinja2_time 

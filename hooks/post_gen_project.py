@@ -3,19 +3,34 @@
 #
 # SEE https://cookiecutter.readthedocs.io/en/stable/advanced/hooks.html
 
+# pylint: disable=missing-function-docstring
+# pylint: disable=unspecified-encoding
+
+import os
+import re
 import shutil
 import sys
-from pathlib import Path
-import os
 from contextlib import contextmanager
+from pathlib import Path
 
+import yaml
 
 SELECTED_DOCKER_BASE = "{{ cookiecutter.docker_base }}"
 SELECTED_GIT_REPO = "{{ cookiecutter.git_repo }}"
+METADATA_PATH = (
+    "{{ cookiecutter._output_dir }}/{{cookiecutter.project_slug}}/.osparc/metadata.yml"
+)
 
 
-def create_dockerfile():
-    folder_name = Path("docker") / SELECTED_DOCKER_BASE.split(":")[0]
+@contextmanager
+def _context_print(msg: str):
+    print(msg, end="...", flush=True)
+    yield
+    print("DONE")
+
+
+def _create_dockerfile():
+    folder_name = Path("docker") / SELECTED_DOCKER_BASE.split(":", maxsplit=1)[0]
 
     # list folders
     # NOTE: it needs to be a list as we delete the folders
@@ -25,7 +40,7 @@ def create_dockerfile():
             shutil.rmtree(folder)
 
 
-def create_ignore_listings():
+def _create_ignore_listings():
     # .gitignore
     common_gitignore = Path("Common.gitignore")
     python_gitignore = Path("Python.gitignore")
@@ -56,33 +71,41 @@ def create_ignore_listings():
     common_dockerignore.unlink()
 
 
-def create_repo_folder():
+def _create_repo_folder():
     if SELECTED_GIT_REPO != "github":
         shutil.rmtree(".github")
     if SELECTED_GIT_REPO != "gitlab":
         shutil.rmtree(".gitlab")
 
 
-@contextmanager
-def context_print(
-    msg,
-):
-    print("-", msg, end="...", flush=True)
-    yield
-    print("DONE")
+def _postpro_osparc_metadata():
+    metadata_path = Path(METADATA_PATH)
+    content = metadata_path.read_text()
+    metadata = yaml.safe_load(content)
+    if metadata.get("version") == metadata.get("version_display", "UNDEFINED"):
+        with _context_print(
+            "metadata: version_display==version, removing version_display"
+        ):
+            # NOTE: prefer to substitue than re-serialize with yaml to avoid risk of
+            # reformatting values
+            pattern = re.compile(r"^version_display:.*\n?", re.MULTILINE)
+            metadata_path.write_text(pattern.sub("", content))
 
 
 def main():
     print("Starting post-gen-project hook:", flush=True)
     try:
-        with context_print("Pruning docker/ folder to selection"):
-            create_dockerfile()
+        with _context_print("Pruning docker/ folder to selection"):
+            _create_dockerfile()
 
-        with context_print("Updating .gitignore and .dockerignore configs"):
-            create_ignore_listings()
+        with _context_print("Updating .gitignore and .dockerignore configs"):
+            _create_ignore_listings()
 
-        with context_print("Adding config for selected external repository"):
-            create_repo_folder()
+        with _context_print("Adding config for selected external repository"):
+            _create_repo_folder()
+
+        
+        _postpro_osparc_metadata()
 
     except Exception as exc:  # pylint: disable=broad-except
         print("ERROR", exc)
