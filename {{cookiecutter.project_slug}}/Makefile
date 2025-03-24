@@ -9,119 +9,59 @@ export VCS_REF    := $(shell git rev-parse --short HEAD 2> /dev/null || echo unv
 export VCS_STATUS := $(if $(shell git status -s 2> /dev/null || echo unversioned repo),'modified/untracked','clean')
 export BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-export DOCKER_REGISTRY   ?= {{ cookiecutter.default_docker_registry }}
 export DOCKER_IMAGE_NAME ?= {{ cookiecutter.project_name.lower().replace(' ', '-') }}
-export DOCKER_IMAGE_TAG  ?= $(shell cat VERSION 2> /dev/null || echo undefined)
-
-export COMPOSE_INPUT_DIR  := ./validation/input
-export COMPOSE_OUTPUT_DIR := .tmp/output
+export DOCKER_IMAGE_TAG ?= {{ cookiecutter.version }}
 
 OSPARC_DIR:=$(CURDIR)/.osparc
 
 APP_NAME := {{ cookiecutter.project_slug }}
 
+# Builds new service version ----------------------------------------------------------------------------
 
-
-
-# INTEGRATION -----------------------------------------------------------------
-METADATA := .osparc/metadata.yml
-
-
-.PHONY: VERSION
-VERSION: $(METADATA) ## generates VERSION from metadata
-	# updating $@ from $<
-	@$(OSPARC_DIR)/bin/ooil get-version --metadata-file $< > $@
-
-service.cli/run: $(METADATA) ## generates run from metadata
-	# Updates adapter script from metadata in $<
-	@$(OSPARC_DIR)/bin/ooil run-creator --metadata $< --runscript $@
-
-docker-compose.yml: $(METADATA) ## generates docker-compose
-	# Injects metadata from $< as labels
-	@$(OSPARC_DIR)/bin/ooil compose --to-spec-file $@ --metadata $<
-
-
-
-# BUILD -----------------------------------------------------------------
-
-define _docker_compose_build
-export DOCKER_BUILD_TARGET=$(if $(findstring -devel,$@),development,$(if $(findstring -cache,$@),cache,production)); \
-	docker compose -f docker-compose.yml build $(if $(findstring -nc,$@),--no-cache,);
+define _bumpversion
+	# upgrades as $(subst $(1),,$@) version, commits and tags
+	@docker run -it --rm -v $(PWD):/${DOCKER_IMAGE_NAME} \
+		-u $(shell id -u):$(shell id -g) \
+		itisfoundation/ci-service-integration-library:v1.0.4 \
+		sh -c "cd /${DOCKER_IMAGE_NAME} && bump2version --verbose --list --config-file $(1) $(subst $(2),,$@)"
 endef
 
+.PHONY: version-patch version-minor version-major
+version-patch version-minor version-major: .bumpversion.cfg ## increases service's version
+	@make compose-spec
+	@$(call _bumpversion,$<,version-)
+	@make compose-spec
 
-.PHONY: build build-devel build-nc build-devel-nc
-build build-devel build-nc build-devel-nc: VERSION docker-compose.yml service.cli/run ## builds image
-	# building image local/${DOCKER_IMAGE_NAME}...
-	@$(call _docker_compose_build)
+.PHONY: compose-spec
+compose-spec: ## runs ooil to assemble the docker-compose.yml file
+	@docker run --rm -v $(PWD):/${DOCKER_IMAGE_NAME} \
+		-u $(shell id -u):$(shell id -g) \
+		itisfoundation/ci-service-integration-library:v1.0.4 \
+		sh -c "cd /${DOCKER_IMAGE_NAME} && ooil compose"
 
-define show-meta
-	$(foreach iid,$(shell docker images */$(1):* -q | sort | uniq),\
-		docker image inspect $(iid) | jq '.[0] | .RepoTags, .ContainerConfig.Labels, .Config.Labels';)
-endef
+build: | compose-spec	## build docker image
+	docker compose build
 
-
-.PHONY: info-build
-info-build: ## displays info on the built image
-	# Built images
-	@docker images */$(DOCKER_IMAGE_NAME):*
-	# Tags and labels
-	@$(call show-meta,$(DOCKER_IMAGE_NAME))
-
-
-# TESTS-----------------------------------------------------------------
-.PHONY: test tests
-test tests:  ## runs validation tests
-	@$(OSPARC_DIR)/bin/ooil test .
-
-
-
-# PUBLISHING -----------------------------------------------------------------
-
-.PHONY: version-service-patch version-service-minor version-service-major
-version-service-patch version-service-minor version-service-major: $(METADATA) ## kernel/service versioning as patch
-	$(OSPARC_DIR)/bin/ooil bump-version --metadata-file $<  --upgrade $(subst version-service-,,$@)
-	# syncing metadata upstream
-	@$(MAKE) VERSION
-
-
-.PHONY: tag-local
-tag-local:
-	docker tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:$(if $(findstring version,$@),$(DOCKER_IMAGE_NAME),latest) local/$(DOCKER_IMAGE_NAME):production
-
-.PHONY: push push-force push-version push-latest pull-latest pull-version tag-latest tag-version
-tag-latest tag-version:
-	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
-
-version_valid  = $(shell test $$(echo $(DOCKER_IMAGE_TAG) | cut --fields=1 --delimiter=.) -gt 0 > /dev/null && echo "image version is valid")
-version_exists = $(shell DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) > /dev/null && echo "image already exists on $(DOCKER_REGISTRY)")
-push push-force: ## pushes (resp. force) services to the registry if service not available in registry.
-	@$(if $(findstring force,$@),,\
-		$(if $(call version_valid),$(info version is valid), $(error $(DOCKER_IMAGE_TAG) is not a valid version (major>=1)))\
-		$(if $(call version_exists),$(error $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) already exists on $(DOCKER_REGISTRY)), $(info no version found on $(DOCKER_REGISTRY)))\
-	)
-	@$(MAKE) push-version;
-	@$(MAKE) push-latest;
+# To test built service locally -------------------------------------------------------------------------
+.PHONY: run-local
+run-local:	## runs image with local configuration
+	docker compose --file docker-compose-local.yml up
 
 .PHONY: publish-local
-publish-local: ## push to local throw away registry to test integration
-	docker tag simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
-	docker push registry:5000/simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+publish-local: ## push to local oSPARC to test integration. It requires the oSPARC platform running on your computer, you can find more information here: https://github.com/ITISFoundation/osparc-simcore/blob/master/README.md
+	docker tag simcore/services/dynamic/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} registry:5000/simcore/services/dynamic/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+	docker push registry:5000/simcore/services/dynamic/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 	@curl registry:5000/v2/_catalog | jq
-	
-push-latest push-version: ## publish service to registry with latest/version tag
-	# pushing '$(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)'...
-	@$(MAKE) tag-$(subst push-,,$@)
-	@docker push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
-	# pushed '$(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)'
 
-pull-latest pull-version: ## pull service from registry
-	@docker pull $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(if $(findstring version,$@),$(DOCKER_IMAGE_TAG),latest)
+.PHONY: help
+help: ## this colorful help
+	@echo "Recipes for '$(notdir $(CURDIR))':"
+	@echo ""
+	@awk 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
 
 
-
-
-# COOCKIECUTTER -----------------------------------------------------------------
+# COOKIECUTTER -----------------------------------------------------------------
 
 .PHONY: replay
 replay: .cookiecutterrc ## re-applies cookiecutter
@@ -132,7 +72,6 @@ replay: .cookiecutterrc ## re-applies cookiecutter
 		"{{ cookiecutter._template }}"
 
 
-
 .PHONY: info
 info: ## general info
 	# env vars: version control
@@ -140,11 +79,7 @@ info: ## general info
 	@echo " VCS_REF                     : $(VCS_REF)"
 	@echo " VCS_STATUS                  : $(VCS_STATUS)"
 	# env vars: docker
-	@echo " DOCKER_REGISTRY             : $(DOCKER_REGISTRY)"
-	@echo " DOCKER_IMAGE_NAME           : $(DOCKER_IMAGE_NAME)"
 	@echo " DOCKER_IMAGE_TAG            : $(DOCKER_IMAGE_TAG)"
-	@echo " COMPOSE_INPUT_DIR           : $(COMPOSE_INPUT_DIR)"
-	@echo " COMPOSE_OUTPUT_DIR          : $(COMPOSE_OUTPUT_DIR)"
 	@echo " BUILD_DATE                  : $(BUILD_DATE)"
 	# exe: recommended dev tools
 	@echo ' git                         : $(shell git --version 2>/dev/null || echo not found)'
@@ -154,20 +89,9 @@ info: ## general info
 	@echo ' python                      : $(shell python3 --version 2>/dev/null || echo not found )'
 	@echo ' docker                      : $(shell docker --version)'
 	@echo ' docker buildx               : $(shell docker buildx version)'
-	@echo ' docker-compose              : $(shell docker-compose --version)'
-	# exe: integration tools
-	@echo ' ooil version                : $(shell $(OSPARC_DIR)/bin/ooil --version)'
-
-
+	@echo ' docker compose              : $(shell docker compose --version)'
 
 # MISC -----------------------------------------------------------------
-
-.PHONY: help
-help: ## this colorful help
-	@echo "Recipes for '$(notdir $(CURDIR))':"
-	@echo ""
-	@awk --posix 'BEGIN {FS = ":.*?## "} /^[[:alpha:][:space:]_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-	@echo ""
 
 
 .PHONY: clean
