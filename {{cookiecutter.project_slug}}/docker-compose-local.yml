@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  {{ cookiecutter.project_slug }}:
+    image: simcore/services/{%- if cookiecutter.project_type == "computational" -%}comp{%- elif cookiecutter.project_type == "dynamic" -%}dynamic{%- endif -%}/{{ cookiecutter.project_name.lower().replace(' ', '-') }}:{{ cookiecutter.version }}
+    volumes:
+      - ${PWD}/validation/input:/input
+      - ${PWD}/validation/output:/output
