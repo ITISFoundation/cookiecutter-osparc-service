@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         python: [3.9]
-        os: [ubuntu-20.04]
+        os: [ubuntu-24.04] 
         docker_buildx: [v0.8.2]
       fail-fast: false
     steps:
@@ -26,7 +26,7 @@ jobs:
           version: ${{ matrix.docker_buildx }}
           driver: docker-container
       - name: setup python environment
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: "pip"
