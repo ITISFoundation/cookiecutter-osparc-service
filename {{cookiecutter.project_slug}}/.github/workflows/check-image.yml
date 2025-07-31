@@ -9,7 +9,7 @@ jobs:
       - name: Checkout repo content
         uses: actions/checkout@v2
       - name: ooil version
-        uses: docker://itisfoundation/ci-service-integration-library:latest
+        uses: docker://itisfoundation/ci-service-integration-library:v2.1.25
         with:
           args: ooil --version
       - name: Assemble docker compose spec
